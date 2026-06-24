@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.com.google.devtools.ksp)
     alias(libs.plugins.com.google.dagger.hilt.android)
     alias(libs.plugins.jetbrains.kotlin.serialization)
+    alias(libs.plugins.androidx.room)
 }
 
 android {
@@ -42,10 +43,13 @@ android {
     }
 }
 
+room {
+    schemaDirectory("$projectDir/schemas")
+}
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    // implementation(libs.androidx.navigation.common.ktx)
     implementation(libs.kotlinx.serialization.core)
 
     // COMPOSE
@@ -60,6 +64,7 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.paging)
     ksp(libs.androidx.room.compiler)
+    annotationProcessor(libs.androidx.room.compiler)
 
     // PAGING
     implementation(libs.androidx.paging.compose)

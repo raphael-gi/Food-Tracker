@@ -1,4 +1,4 @@
-package com.kenji.food.tracker.ui.component
+package com.kenji.food.tracker.ui.component.button
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box

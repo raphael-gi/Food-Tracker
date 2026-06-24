@@ -20,7 +20,6 @@ import com.kenji.food.tracker.entity.RecipeFoodEntity
         FoodTargetEntity::class
     ],
     version = 1,
-    exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun foodDao(): FoodDao

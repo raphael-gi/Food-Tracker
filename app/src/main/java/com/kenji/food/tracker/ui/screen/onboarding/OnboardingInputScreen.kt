@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kenji.food.tracker.R
-import com.kenji.food.tracker.ui.component.ActionButton
+import com.kenji.food.tracker.ui.component.button.ActionButton
 import com.kenji.food.tracker.ui.component.input.FormNumberField
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
 import com.kenji.food.tracker.ui.viewmodel.onboarding.input.OnboardingInputAction

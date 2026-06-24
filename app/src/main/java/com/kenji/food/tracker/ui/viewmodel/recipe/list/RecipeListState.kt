@@ -7,4 +7,6 @@ data class RecipeListState(
 
 sealed interface RecipeListAction {
     data object NextPage : RecipeListAction
+    data class ToggleSelection(val id: Int) : RecipeListAction
+    data object DeleteSelected : RecipeListAction
 }

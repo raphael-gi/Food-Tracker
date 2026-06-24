@@ -1,5 +1,6 @@
 package com.kenji.food.tracker.ui.screen.recipe
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,19 +10,24 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxDefaults
+import androidx.compose.material3.SwipeToDismissBoxState
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -34,10 +40,11 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.kenji.food.tracker.R
 import com.kenji.food.tracker.entity.FoodEntity
-import com.kenji.food.tracker.ui.component.ActionButton
-import com.kenji.food.tracker.ui.component.FoodCell
-import com.kenji.food.tracker.ui.component.input.FormTextField
 import com.kenji.food.tracker.ui.component.TopBar
+import com.kenji.food.tracker.ui.component.button.ActionButton
+import com.kenji.food.tracker.ui.component.button.SelectionButton
+import com.kenji.food.tracker.ui.component.cell.FoodCell
+import com.kenji.food.tracker.ui.component.input.FormTextField
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
 import com.kenji.food.tracker.ui.viewmodel.recipe.add.AddRecipeAction
 import com.kenji.food.tracker.ui.viewmodel.recipe.add.AddRecipeEffect
@@ -96,18 +103,49 @@ private fun AddRecipe(
         modifier = modifier.padding(horizontal = 10.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        FormTextField(modifier = Modifier.focusRequester(focusRequester), value = name, label = R.string.name) {
+        FormTextField(
+            modifier = Modifier.focusRequester(focusRequester),
+            value = name,
+            label = R.string.name
+        ) {
             onAction(AddRecipeAction.SetName(it))
         }
 
         LazyColumn {
-            items(selectedFoods.values.toList()) { food ->
-                FoodCell(item = food)
+            items(items = selectedFoods.values.toList(), key = { it.id }) { food ->
+                val position = SwipeToDismissBoxDefaults.positionalThreshold
+
+                val swipeToDismissState = remember(food.id) {
+                    SwipeToDismissBoxState(
+                        initialValue = SwipeToDismissBoxValue.Settled,
+                        positionalThreshold = position
+                    )
+                }
+
+                SwipeToDismissBox(
+                    state = swipeToDismissState,
+                    enableDismissFromEndToStart = false,
+                    onDismiss = {
+                        onAction(AddRecipeAction.ToggleSelection(food))
+                    },
+                    backgroundContent = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.error)
+                        )
+                    }
+                ) {
+                    FoodCell(
+                        modifier = Modifier.background(MaterialTheme.colorScheme.background),
+                        item = food
+                    )
+                }
             }
         }
 
-        Button(onClick = { onAction(AddRecipeAction.ToggleSelectMode) }) {
-            Text("Select Food")
+        SelectionButton(text = R.string.selectFood) {
+            onAction(AddRecipeAction.ToggleSelectMode)
         }
 
         if (isSelectionMode) {
@@ -163,7 +201,10 @@ private fun FoodSelectionCell(
     selectedFoods: Set<Int>,
     toggleSelection: () -> Unit
 ) {
-    Row(modifier = Modifier.clickable { }) {
+    Row(
+        modifier = Modifier.clickable { toggleSelection() },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Checkbox(
             checked = selectedFoods.contains(item.id),
             onCheckedChange = { toggleSelection() }

@@ -57,4 +57,7 @@ interface FoodDao {
         """
     )
     fun getAllRecipes(): PagingSource<Int, Recipe>
+
+    @Query("DELETE FROM food WHERE food.id IN (:ids)")
+    suspend fun delete(ids: Set<Int>)
 }

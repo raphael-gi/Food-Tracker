@@ -9,13 +9,13 @@ import com.kenji.food.tracker.db.dao.FoodDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class RecipeListViewModel @Inject constructor(private val foodDao: FoodDao) : ViewModel() {
-    private val _state = MutableStateFlow(
-        RecipeListState()
-    )
+    private val _state = MutableStateFlow(RecipeListState())
     val state = _state.asStateFlow()
 
     val items = Pager(
@@ -25,7 +25,30 @@ class RecipeListViewModel @Inject constructor(private val foodDao: FoodDao) : Vi
 
     fun onAction(action: RecipeListAction) {
         when (action) {
-            else -> {}
+            RecipeListAction.NextPage -> {}
+            is RecipeListAction.ToggleSelection -> this.onToggleSelection(action.id)
+            RecipeListAction.DeleteSelected -> this.onDeleteSelected()
+        }
+    }
+
+    private fun onToggleSelection(id: Int) {
+        _state.update {
+            val newItems = if (it.selectedItems.contains(id)) {
+                it.selectedItems - id
+            } else {
+                it.selectedItems + id
+            }
+
+            it.copy(selectedItems = newItems)
+        }
+    }
+
+    private fun onDeleteSelected() {
+        val selectedIds = state.value.selectedItems
+
+        viewModelScope.launch {
+            foodDao.delete(selectedIds)
+            _state.update { it.copy(selectedItems = emptySet()) }
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.kenji.food.tracker.ui.component
+package com.kenji.food.tracker.ui.component.cell
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.kenji.food.tracker.entity.FoodEntity
 import com.kenji.food.tracker.entity.Recipe
+import com.kenji.food.tracker.ui.component.Tag
 
 @Composable
 fun RecipeCell(modifier: Modifier = Modifier, item: Recipe) {

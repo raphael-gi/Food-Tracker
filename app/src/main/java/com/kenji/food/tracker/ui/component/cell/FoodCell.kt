@@ -1,4 +1,4 @@
-package com.kenji.food.tracker.ui.component
+package com.kenji.food.tracker.ui.component.cell
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kenji.food.tracker.entity.FoodEntity
 import com.kenji.food.tracker.entity.FoodUnit
+import com.kenji.food.tracker.ui.component.Tag
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
 
 @Composable
@@ -52,6 +53,7 @@ fun FoodTags(item: FoodEntity) {
         }
     }
 }
+
 
 @Preview(heightDp = 500, widthDp = 300)
 @Composable

@@ -17,7 +17,6 @@ nav3Core = "1.1.2"
 lifecycleViewmodelNav3 = "2.10.0"
 kotlinSerialization = "2.2.21"
 kotlinxSerializationCore = "1.9.0"
-navigationCommonKtx = "2.9.8"
 
 [libraries]
 androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
@@ -45,11 +44,11 @@ androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runt
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "nav3Core" }
 androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycleViewmodelNav3" }
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinxSerializationCore" }
-androidx-navigation-common-ktx = { group = "androidx.navigation", name = "navigation-common-ktx", version.ref = "navigationCommonKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 com-google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 com-google-dagger-hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "daggerHilt" }
-jetbrains-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerialization"}
+jetbrains-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerialization" }
+androidx-room = { id = "androidx.room", version.ref = "roomVersion" }

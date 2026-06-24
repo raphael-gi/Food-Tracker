@@ -11,7 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.kenji.food.tracker.R
-import com.kenji.food.tracker.ui.component.ActionButton
+import com.kenji.food.tracker.ui.component.button.ActionButton
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
 
 @Composable

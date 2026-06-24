@@ -82,7 +82,10 @@ fun AppNavigation() {
                 }
 
                 entry<Route.Count> {
-                    CountScreen()
+                    CountScreen {
+                        backStack.clear()
+                        backStack.add(Route.Home)
+                    }
                 }
 
                 entry<Route.Profile> {
