@@ -1,0 +1,140 @@
+package com.kenji.food.tracker.ui.component.chart
+
+import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.kenji.food.tracker.R
+import com.kenji.food.tracker.entity.CaloriesPerDay
+import com.kenji.food.tracker.entity.FoodTargetEntity
+import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
+import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
+import com.patrykandpatrick.vico.compose.cartesian.axis.HorizontalAxis
+import com.patrykandpatrick.vico.compose.cartesian.axis.VerticalAxis
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianLayerRangeProvider
+import com.patrykandpatrick.vico.compose.cartesian.data.ColumnCartesianLayerModel
+import com.patrykandpatrick.vico.compose.cartesian.data.columnModel
+import com.patrykandpatrick.vico.compose.cartesian.decoration.HorizontalLine
+import com.patrykandpatrick.vico.compose.cartesian.layer.ColumnCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
+import com.patrykandpatrick.vico.compose.common.Fill
+import com.patrykandpatrick.vico.compose.common.component.LineComponent
+import com.patrykandpatrick.vico.compose.common.component.rememberLineComponent
+import com.patrykandpatrick.vico.compose.common.data.ExtraStore
+
+@Composable
+fun WeekOverview(caloriesPerDay: List<CaloriesPerDay>, currentTarget: FoodTargetEntity) {
+    val modelProducer = remember { CartesianChartModelProducer() }
+
+    LaunchedEffect(caloriesPerDay) {
+        modelProducer.runTransaction {
+            columnModel { series(caloriesPerDay.map(CaloriesPerDay::calories)) }
+        }
+    }
+
+    val labels = caloriesPerDay.map { perDay ->
+        val dayRes = getShortDayOfWeek(perDay.day)
+        if (dayRes != null) stringResource(dayRes)
+        else ""
+    }
+
+    val columnShape = rememberLineComponent(
+        fill = Fill(MaterialTheme.colorScheme.tertiary),
+        thickness = 8.dp,
+        shape = RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp),
+    )
+
+    CartesianChartHost(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(10.dp),
+        chart = rememberCartesianChart(
+            rememberColumnCartesianLayer(
+                columnProvider = remember {
+                    object : ColumnCartesianLayer.ColumnProvider {
+                        override fun getColumn(
+                            entry: ColumnCartesianLayerModel.Entry,
+                            extraStore: ExtraStore
+                        ) = columnShape
+
+                        override fun getWidestSeriesColumn(
+                            seriesKey: Any,
+                            seriesIndex: Int,
+                            extraStore: ExtraStore
+                        ): LineComponent {
+                            return columnShape
+                        }
+                    }
+                },
+                rangeProvider = remember {
+                    CartesianLayerRangeProvider.fixed(
+                        minY = 0.0,
+                        maxY = maxOf(
+                            currentTarget.calories.toDouble(),
+                            *caloriesPerDay.map { it.calories.toDouble() }.toTypedArray()
+                        ) + 200.0
+                    )
+                }
+            ),
+            startAxis = VerticalAxis.rememberStart(),
+            bottomAxis = HorizontalAxis.rememberBottom(
+                valueFormatter = { _, i, _ ->
+                    labels[i.toInt()]
+                }
+            ),
+            decorations = listOf(
+                HorizontalLine(
+                    y = { currentTarget.calories.toDouble() },
+                    line = rememberLineComponent(
+                        fill = Fill(MaterialTheme.colorScheme.secondary),
+                        thickness = 2.dp
+                    )
+                )
+            ),
+        ),
+        modelProducer = modelProducer,
+    )
+}
+
+@StringRes
+private fun getShortDayOfWeek(day: Int): Int? {
+    return when (day) {
+        0 -> R.string.mondayShort
+        1 -> R.string.tuesdayShort
+        2 -> R.string.wednesdayShort
+        3 -> R.string.thursdayShort
+        4 -> R.string.fridayShort
+        5 -> R.string.saturdayShort
+        6 -> R.string.sundayShort
+        else -> null
+    }
+}
+
+
+@Preview(heightDp = 400)
+@Composable
+private fun WeekOverviewPreview() {
+    val target = FoodTargetEntity(
+        id = 0,
+        calories = 2000,
+        protein = null,
+        sugar = null
+    )
+
+    FoodTrackerTheme {
+        Surface {
+            WeekOverview(emptyList(), target)
+        }
+    }
+}

@@ -13,6 +13,17 @@ import com.kenji.food.tracker.ui.Route
 fun BottomBar(currentRoute: Route?, onRoute: (Route) -> Unit) {
     NavigationBar {
         NavigationBarItem(
+            selected = currentRoute == Route.CountHistoryList,
+            onClick = { onRoute(Route.CountHistoryList) },
+            icon = {
+                Icon(
+                    painter = painterResource(R.drawable.history),
+                    contentDescription = stringResource(R.string.history)
+                )
+            }
+        )
+
+        NavigationBarItem(
             selected = currentRoute == Route.Count,
             onClick = { onRoute(Route.Count) },
             icon = {

@@ -22,7 +22,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kenji.food.tracker.R
+import com.kenji.food.tracker.entity.CaloriesPerDay
+import com.kenji.food.tracker.entity.FoodTargetEntity
 import com.kenji.food.tracker.ui.Route
+import com.kenji.food.tracker.ui.component.chart.WeekOverview
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
 import com.kenji.food.tracker.ui.viewmodel.HomeViewModel
 
@@ -33,14 +36,16 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel(), onNavigate: (Route) -
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     HomeContent(
-        caloriesEatenToday = state.caloriesEatenToday.toString(),
+        caloriesPerDay = state.caloriesPerDay,
+        currentTarget = state.currentTarget,
         onNavigate = onNavigate
     )
 }
 
 @Composable
 private fun HomeContent(
-    caloriesEatenToday: String,
+    caloriesPerDay: List<CaloriesPerDay>,
+    currentTarget: FoodTargetEntity?,
     onNavigate: (Route) -> Unit
 ) {
     Column(
@@ -57,12 +62,14 @@ private fun HomeContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .wrapContentSize(),
-                text = "Count Food"
+                text = stringResource(R.string.countMeal)
             )
         }
 
         HomeTile(modifier = Modifier.weight(2.5f), onClick = {}) {
-            Text(caloriesEatenToday)
+            currentTarget?.let { target ->
+                WeekOverview(caloriesPerDay, target)
+            }
         }
 
         HomeTile(
@@ -106,12 +113,20 @@ private fun HomeTile(
     )
 }
 
+
 @Preview
 @Composable
 private fun HomeScreenPreview() {
+    val target = FoodTargetEntity(
+        id = 0,
+        calories = 2000,
+        protein = null,
+        sugar = null
+    )
+
     FoodTrackerTheme {
         Surface {
-            HomeContent(caloriesEatenToday = "5") { }
+            HomeContent(caloriesPerDay = emptyList(), currentTarget = target) { }
         }
     }
 }

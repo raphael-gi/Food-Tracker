@@ -1,4 +1,4 @@
-package com.kenji.food.tracker.ui.screen.food
+package com.kenji.food.tracker.ui.screen.count
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -7,63 +7,45 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.kenji.food.tracker.R
-import com.kenji.food.tracker.entity.FoodEntity
-import com.kenji.food.tracker.entity.FoodUnit
-import com.kenji.food.tracker.ui.Route
+import com.kenji.food.tracker.entity.CountedMealEntity
 import com.kenji.food.tracker.ui.component.TopBar
-import com.kenji.food.tracker.ui.component.button.AddButton
 import com.kenji.food.tracker.ui.component.button.DeleteButton
-import com.kenji.food.tracker.ui.component.cell.FoodCell
-import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
-import com.kenji.food.tracker.ui.viewmodel.food.list.FoodListAction
-import com.kenji.food.tracker.ui.viewmodel.food.list.FoodListViewModel
-import kotlinx.coroutines.flow.flowOf
+import com.kenji.food.tracker.ui.component.cell.CountedMealCell
+import com.kenji.food.tracker.ui.viewmodel.count.history.CountHistoryAction
+import com.kenji.food.tracker.ui.viewmodel.count.history.CountHistoryListViewModel
 
 @Composable
-fun FoodListScreen(
-    viewModel: FoodListViewModel = hiltViewModel(),
-    onNavigate: (Route) -> Unit,
-    onBackPressed: () -> Unit
-) {
+fun CountHistoryListScreen(viewModel: CountHistoryListViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val items = viewModel.items.collectAsLazyPagingItems()
+    val countedMeals = viewModel.items.collectAsLazyPagingItems()
 
     Scaffold(
         topBar = {
             TopBar(
-                title = R.string.foods,
-                onBackPressed = onBackPressed,
+                title = R.string.history,
                 actions = {
                     AnimatedVisibility(state.selectedItems.isNotEmpty()) {
                         DeleteButton {
-                            viewModel.onAction(FoodListAction.DeleteSelected)
+                            viewModel.onAction(CountHistoryAction.DeleteSelected)
                         }
                     }
                 }
             )
-        },
-        floatingActionButton = {
-            AddButton {
-                onNavigate(Route.AddFood)
-            }
-        },
+        }
     ) { innerPadding ->
-        FoodList(
+        CountedMealList(
             modifier = Modifier.padding(innerPadding),
-            items = items,
+            items = countedMeals,
             selectedItems = state.selectedItems,
             onAction = viewModel::onAction
         )
@@ -71,11 +53,11 @@ fun FoodListScreen(
 }
 
 @Composable
-private fun FoodList(
+private fun CountedMealList(
     modifier: Modifier = Modifier,
-    items: LazyPagingItems<FoodEntity>,
+    items: LazyPagingItems<CountedMealEntity>,
     selectedItems: Set<Int>,
-    onAction: (FoodListAction) -> Unit
+    onAction: (CountHistoryAction) -> Unit
 ) {
     LazyColumn(modifier = modifier) {
         items(count = items.itemCount, key = items.itemKey { it.id }) { index ->
@@ -87,13 +69,13 @@ private fun FoodList(
                     MaterialTheme.colorScheme.background
                 }
 
-                FoodCell(
+                CountedMealCell(
                     modifier = Modifier
                         .animateItem()
                         .background(background)
                         .combinedClickable(
                             onLongClick = {
-                                onAction(FoodListAction.ToggleSelection(item.id))
+                                onAction(CountHistoryAction.ToggleSelection(item.id))
                             },
                             onClick = {}
                         ),
@@ -102,45 +84,6 @@ private fun FoodList(
             } else {
                 Text("Unavailable")
             }
-        }
-    }
-}
-
-
-@Preview(heightDp = 500, widthDp = 300)
-@Composable
-private fun PreviewFoodListScreen() {
-    val items = flowOf(
-        PagingData.from(
-            listOf(
-                FoodEntity(
-                    id = 1,
-                    name = "Chicken",
-                    calories = 25,
-                    protein = 20,
-                    quantity = 100,
-                    isRecipe = false,
-                    unit = FoodUnit.G
-                ),
-                FoodEntity(
-                    id = 2,
-                    name = "Chicken 2",
-                    calories = 25,
-                    quantity = 100,
-                    isRecipe = false,
-                    unit = FoodUnit.G
-                )
-            )
-        )
-    ).collectAsLazyPagingItems()
-
-    FoodTrackerTheme {
-        Surface {
-            FoodList(
-                modifier = Modifier,
-                items = items,
-                selectedItems = emptySet()
-            ) {}
         }
     }
 }

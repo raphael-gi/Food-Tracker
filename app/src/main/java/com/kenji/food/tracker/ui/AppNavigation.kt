@@ -12,6 +12,7 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.kenji.food.tracker.ui.component.BottomBar
 import com.kenji.food.tracker.ui.screen.HomeScreen
+import com.kenji.food.tracker.ui.screen.count.CountHistoryListScreen
 import com.kenji.food.tracker.ui.screen.count.CountScreen
 import com.kenji.food.tracker.ui.screen.food.AddFoodScreen
 import com.kenji.food.tracker.ui.screen.food.FoodListScreen
@@ -86,6 +87,10 @@ fun AppNavigation() {
                         backStack.clear()
                         backStack.add(Route.Home)
                     }
+                }
+
+                entry<Route.CountHistoryList> {
+                    CountHistoryListScreen()
                 }
 
                 entry<Route.Profile> {

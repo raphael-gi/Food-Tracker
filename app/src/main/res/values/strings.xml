@@ -13,6 +13,7 @@
     <string name="update">Update</string>
     <string name="confirm">Confirm</string>
     <string name="navigateBack">Navigate Back</string>
+    <string name="history">History</string>
 
     <string name="countMeal">Count Meal</string>
     <string name="name">Name</string>
@@ -35,4 +36,12 @@
 
     <string name="caloricTargetQuestion">What is your caloric target?</string>
     <string name="selectFood">Select Food</string>
+
+    <string name="mondayShort">Mon</string>
+    <string name="tuesdayShort">Tue</string>
+    <string name="wednesdayShort">Wed</string>
+    <string name="thursdayShort">Thu</string>
+    <string name="fridayShort">Fri</string>
+    <string name="saturdayShort">Sat</string>
+    <string name="sundayShort">Sun</string>
 </resources>

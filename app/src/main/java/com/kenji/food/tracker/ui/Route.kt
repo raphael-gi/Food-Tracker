@@ -23,6 +23,9 @@ sealed interface Route : NavKey {
     object Count : Route
 
     @Serializable
+    object CountHistoryList : Route
+
+    @Serializable
     object Profile : Route
 
     @Serializable

@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
+import com.kenji.food.tracker.entity.CaloriesPerDay
 import com.kenji.food.tracker.entity.CountedMealEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -23,6 +24,9 @@ interface CountedMealDao {
     )
     fun getAll(): PagingSource<Int, CountedMealEntity>
 
+    @Query("DELETE FROM counted_meal WHERE counted_meal.id IN (:ids)")
+    suspend fun delete(ids: Set<Int>)
+
     @Query(
         """
         SELECT * FROM counted_meal
@@ -30,4 +34,15 @@ interface CountedMealDao {
         """
     )
     fun getToday(): Flow<List<CountedMealEntity>>
+
+    @Query(
+        """
+        SELECT (CAST(strftime('%w', DATE(eatenAt / 1000, 'unixepoch')) AS INTEGER) + 6) % 7 AS day, SUM(calories) AS calories
+        FROM counted_meal
+        WHERE DATE(eatenAt / 1000, 'unixepoch') > DATE(strftime('%s', 'now', '-7 days'), 'unixepoch')
+        AND (CAST(strftime('%w', DATE(eatenAt / 1000, 'unixepoch')) AS INTEGER) + 6) % 7 <= (CAST(strftime('%w', DATE(strftime('%s', 'now', '-7 days'), 'unixepoch')) AS INTEGER) + 6) % 7
+        GROUP BY strftime("%w", DATE(eatenAt / 1000, 'unixepoch'))
+    """
+    )
+    fun getCaloriesPerDayThisWeek(): Flow<List<CaloriesPerDay>>
 }

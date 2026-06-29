@@ -12,13 +12,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.kenji.food.tracker.entity.FoodEntity
-import com.kenji.food.tracker.entity.FoodUnit
+import com.kenji.food.tracker.entity.CountedMealEntity
 import com.kenji.food.tracker.ui.component.Tag
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Date
 
 @Composable
-fun FoodCell(modifier: Modifier = Modifier, item: FoodEntity) {
+fun CountedMealCell(modifier: Modifier = Modifier, item: CountedMealEntity) {
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -29,17 +31,18 @@ fun FoodCell(modifier: Modifier = Modifier, item: FoodEntity) {
                 text = item.name,
                 style = MaterialTheme.typography.titleMedium
             )
-            Text(
-                text = "${item.quantity}${item.unit.name.lowercase()}",
-                style = MaterialTheme.typography.labelMedium
-            )
+
+            val date = Date(item.eatenAt).toInstant()
+            val format = DateTimeFormatter.ofPattern("dd MM yyyy").withZone(ZoneId.systemDefault())
+
+            Text(format.format(date))
         }
         FoodTags(item)
     }
 }
 
 @Composable
-private fun FoodTags(item: FoodEntity) {
+private fun FoodTags(item: CountedMealEntity) {
     Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
         Tag(text = item.calories.toString())
         item.carbs?.let {
@@ -58,19 +61,16 @@ private fun FoodTags(item: FoodEntity) {
 @Preview(heightDp = 500, widthDp = 300)
 @Composable
 private fun PreviewFoodListScreen() {
-    val item = FoodEntity(
+    val item = CountedMealEntity(
         id = 1,
         name = "Chicken",
         calories = 25,
         protein = 20,
-        quantity = 100,
-        isRecipe = false,
-        unit = FoodUnit.G
     )
 
     FoodTrackerTheme {
         Surface {
-            FoodCell(item = item)
+            CountedMealCell(item = item)
         }
     }
 }
