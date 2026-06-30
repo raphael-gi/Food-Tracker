@@ -16,8 +16,7 @@ import com.kenji.food.tracker.ui.screen.count.CountHistoryListScreen
 import com.kenji.food.tracker.ui.screen.count.CountScreen
 import com.kenji.food.tracker.ui.screen.food.AddFoodScreen
 import com.kenji.food.tracker.ui.screen.food.FoodListScreen
-import com.kenji.food.tracker.ui.screen.onboarding.OnboardingRoute
-import com.kenji.food.tracker.ui.screen.onboarding.onboardingBuilder
+import com.kenji.food.tracker.ui.screen.onboarding.OnboardingScreen
 import com.kenji.food.tracker.ui.screen.profile.FoodTargetScreen
 import com.kenji.food.tracker.ui.screen.profile.ProfileScreen
 import com.kenji.food.tracker.ui.screen.recipe.AddRecipeScreen
@@ -26,7 +25,7 @@ import com.kenji.food.tracker.ui.viewmodel.food.target.FoodTargetViewModel
 
 @Composable
 fun AppNavigation() {
-    val backStack = rememberNavBackStack(OnboardingRoute.Loading)
+    val backStack = rememberNavBackStack(Route.Onboarding)
 
     Scaffold(
         bottomBar = {
@@ -48,7 +47,12 @@ fun AppNavigation() {
                 rememberViewModelStoreNavEntryDecorator()
             ),
             entryProvider = entryProvider {
-                onboardingBuilder(backStack)
+                entry<Route.Onboarding> {
+                    OnboardingScreen {
+                        backStack.clear()
+                        backStack.add(Route.Home)
+                    }
+                }
 
                 entry<Route.Home> {
                     HomeScreen { route ->
