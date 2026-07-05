@@ -1,5 +1,10 @@
 package com.kenji.food.tracker.ui.screen.profile
 
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
@@ -10,16 +15,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,6 +40,7 @@ import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
 import com.kenji.food.tracker.ui.viewmodel.profile.ProfileAction
 import com.kenji.food.tracker.ui.viewmodel.profile.ProfileEffect
 import com.kenji.food.tracker.ui.viewmodel.profile.ProfileViewModel
+import com.kenji.food.tracker.util.Permissions
 
 private val SPACING = 10.dp
 
@@ -44,7 +52,7 @@ fun ProfileScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
-        viewModel.effect.collect({ effect ->
+        viewModel.effect.collect { effect ->
             when (effect) {
                 is ProfileEffect.OnUpdateFoodTarget -> onRoute(
                     Route.FoodTarget(
@@ -54,11 +62,12 @@ fun ProfileScreen(
                     )
                 )
             }
-        })
+        }
     }
 
     ProfileScreenContent(
         currentFoodTarget = state.currentFoodTarget,
+        barcodeScanningEnabled = state.barcodeScanningEnabled,
         onAction = viewModel::onAction
     )
 }
@@ -66,6 +75,7 @@ fun ProfileScreen(
 @Composable
 private fun ProfileScreenContent(
     currentFoodTarget: FoodTargetEntity?,
+    barcodeScanningEnabled: Boolean,
     onAction: (ProfileAction) -> Unit
 ) {
     Column(
@@ -74,20 +84,17 @@ private fun ProfileScreenContent(
             .padding(SPACING),
         verticalArrangement = Arrangement.spacedBy(SPACING)
     ) {
-        when (val currentFoodTarget = currentFoodTarget) {
-            null -> {
-                Button(onClick = { onAction(ProfileAction.UpdateFoodTarget) }) {
-                    Text("Set Food Target")
-                }
-            }
-
-            else -> CurrentFoodTargetCard(currentFoodTarget, onAction)
+        if (currentFoodTarget != null) {
+            CurrentFoodTargetSection(currentFoodTarget, onAction)
+            HorizontalDivider()
         }
+
+        CameraPermissionSection(barcodeScanningEnabled, onAction)
     }
 }
 
 @Composable
-private fun CurrentFoodTargetCard(
+private fun CurrentFoodTargetSection(
     currentFoodTarget: FoodTargetEntity,
     onAction: (ProfileAction) -> Unit
 ) {
@@ -125,6 +132,44 @@ private fun CurrentFoodTargetCard(
 }
 
 @Composable
+private fun CameraPermissionSection(
+    barcodeScanningEnabled: Boolean,
+    onAction: (ProfileAction) -> Unit
+) {
+    val context = LocalContext.current
+
+    val permissionLauncher = rememberLauncherForActivityResult(RequestPermission()) { isGranted ->
+        if (isGranted) {
+            onAction(ProfileAction.ToggleBarcodePermission)
+        }
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(text = stringResource(R.string.barcodeScanning))
+
+        Switch(
+            checked = barcodeScanningEnabled,
+            onCheckedChange = {
+                if (!barcodeScanningEnabled) {
+                    permissionLauncher.launch(Permissions.BARCODE_PERMISSIONS)
+                } else {
+                    val uri = Uri.fromParts("package", context.packageName, null)
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = uri
+                    }
+
+                    context.startActivity(intent)
+                }
+            }
+        )
+    }
+}
+
+@Composable
 private fun FoodTargetProperty(
     value: Int?,
     @DrawableRes icon: Int,
@@ -156,7 +201,8 @@ private fun ProfileScreenPreview() {
                 calories = 100,
                 protein = 50,
                 sugar = null
-            )
+            ),
+            barcodeScanningEnabled = true
         ) {}
     }
 }

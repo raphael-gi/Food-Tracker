@@ -11,6 +11,8 @@ data class CountState(
 )
 
 sealed interface CountAction {
+    data object LaunchCamera : CountAction
+    data class CodeScanned(val code: String) : CountAction
     data object ToggleSelectMode : CountAction
     data class SelectMeal(val meal: Recipe) : CountAction
     data class SetMealQuantity(val input: String) : CountAction
@@ -18,5 +20,7 @@ sealed interface CountAction {
 }
 
 sealed interface CountEffect {
+    data object LaunchCamera : CountEffect
+    data object ScanNotFound : CountEffect
     data object Finish : CountEffect
 }

@@ -29,6 +29,7 @@ fun FormTextField(
     @DrawableRes iconRes: Int? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions(),
     required: Boolean = false,
+    onPressDone: () -> Unit = {},
     onValueChange: (String) -> Unit,
 ) = FormTextField(
     modifier,
@@ -37,6 +38,7 @@ fun FormTextField(
     iconRes,
     keyboardOptions,
     required,
+    onPressDone,
     onValueChange
 )
 
@@ -48,6 +50,7 @@ fun FormTextField(
     @DrawableRes iconRes: Int? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions(),
     required: Boolean = false,
+    onPressDone: () -> Unit = {},
     onValueChange: (String) -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
@@ -75,7 +78,10 @@ fun FormTextField(
             imeAction = ImeAction.Done
         ),
         keyboardActions = KeyboardActions(
-            onDone = { focusManager.moveFocus(FocusDirection.Down) }
+            onDone = {
+                focusManager.moveFocus(FocusDirection.Down)
+                onPressDone()
+            }
         )
     )
 }
@@ -90,8 +96,7 @@ private fun FormTextFieldPreview() {
                 value = "",
                 label = R.string.caloriesLabel,
                 required = true,
-                onValueChange = {}
-            )
+            ) {}
         }
     }
 }

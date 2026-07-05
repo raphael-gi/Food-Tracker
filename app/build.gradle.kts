@@ -10,7 +10,7 @@ plugins {
 android {
     namespace = "com.kenji.food.tracker"
     compileSdk {
-        version = release(36) {
+        version = release(37) {
             minorApiLevel = 1
         }
     }
@@ -18,7 +18,7 @@ android {
     defaultConfig {
         applicationId = "com.kenji.food.tracker"
         minSdk = 33
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 
@@ -81,6 +81,11 @@ dependencies {
 
     // VICO
     implementation(libs.vico.compose.m3)
+
+    // CAMERAX
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.mlkit.vision)
+    implementation(libs.play.services.mlkit.barcode.scanning)
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

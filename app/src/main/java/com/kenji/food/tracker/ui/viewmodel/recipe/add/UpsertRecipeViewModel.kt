@@ -9,6 +9,9 @@ import com.kenji.food.tracker.db.dao.FoodDao
 import com.kenji.food.tracker.entity.FoodEntity
 import com.kenji.food.tracker.entity.FoodUnit
 import com.kenji.food.tracker.entity.Recipe
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,27 +19,55 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class AddRecipeViewModel @Inject constructor(private val foodDao: FoodDao) : ViewModel() {
-    private val _state = MutableStateFlow(AddRecipeState())
+@HiltViewModel(assistedFactory = UpsertRecipeViewModel.Factory::class)
+class UpsertRecipeViewModel @AssistedInject constructor(
+    private val foodDao: FoodDao,
+    @Assisted private val id: Int?
+) : ViewModel() {
+    private val _state = MutableStateFlow(
+        UpsertRecipeState(
+            isCreate = id == null,
+            isLoading = id != null
+        )
+    )
     val state = _state.asStateFlow()
 
     val foods = Pager(
         config = PagingConfig(pageSize = 5),
-        pagingSourceFactory = { foodDao.getAllFoods() }
+        pagingSourceFactory = { foodDao.getAllFoods("%") }
     ).flow.cachedIn(viewModelScope)
 
-    private val _effect = Channel<AddRecipeEffect>()
+    private val _effect = Channel<UpsertRecipeEffect>()
     val effect = _effect.receiveAsFlow()
 
-    fun onAction(action: AddRecipeAction) {
+    @AssistedFactory
+    interface Factory {
+        fun create(id: Int? = null): UpsertRecipeViewModel
+    }
+
+    init {
+        if (id != null) {
+            viewModelScope.launch {
+                foodDao.getRecipeById(id).collect { recipe ->
+                    _state.update {
+                        it.copy(
+                            name = recipe.food.name,
+                            selectedFoods = recipe.foods.associateBy { food -> food.id },
+                            isLoading = false
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    fun onAction(action: UpsertRecipeAction) {
         when (action) {
-            is AddRecipeAction.SetName -> this.onSetName(action.name)
-            AddRecipeAction.ToggleSelectMode -> this.onToggleSelectMode()
-            is AddRecipeAction.ToggleSelection -> this.onToggleSelection(action.food)
-            AddRecipeAction.Create -> this.onCreate()
+            is UpsertRecipeAction.SetName -> this.onSetName(action.name)
+            UpsertRecipeAction.ToggleSelectMode -> this.onToggleSelectMode()
+            is UpsertRecipeAction.ToggleSelection -> this.onToggleSelection(action.food)
+            UpsertRecipeAction.Create -> this.onCreate()
         }
     }
 
@@ -64,7 +95,7 @@ class AddRecipeViewModel @Inject constructor(private val foodDao: FoodDao) : Vie
         val name = state.value.name
 
         val entity = FoodEntity(
-            id = 0,
+            id = id ?: 0,
             name = name,
             calories = null,
             protein = null,
@@ -79,9 +110,8 @@ class AddRecipeViewModel @Inject constructor(private val foodDao: FoodDao) : Vie
         )
 
         viewModelScope.launch {
-            foodDao.insertTest(recipe)
-            // foodDao.insertRecipe(entity, emptyList())
-            _effect.send(AddRecipeEffect.NavBack)
+            foodDao.upsertRecipe(recipe)
+            _effect.send(UpsertRecipeEffect.NavBack)
         }
     }
 }

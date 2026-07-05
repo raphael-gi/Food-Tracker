@@ -5,31 +5,37 @@ import kotlinx.serialization.Serializable
 
 sealed interface Route : NavKey {
     @Serializable
-    object Onboarding : Route
+    data object Onboarding : Route
 
     @Serializable
-    object Home : Route
+    data object Home : Route
 
     @Serializable
-    object FoodList : Route
+    data object FoodList : Route
 
     @Serializable
-    object RecipeList : Route
+    data class FoodDetail(val id: Int) : Route
 
     @Serializable
-    object AddFood : Route
+    data object RecipeList : Route
 
     @Serializable
-    object AddRecipe : Route
+    data class RecipeDetail(val id: Int) : Route
 
     @Serializable
-    object Count : Route
+    data class UpsertFood(val id: Int? = null) : Route
 
     @Serializable
-    object CountHistoryList : Route
+    data class UpsertRecipe(val id: Int? = null) : Route
 
     @Serializable
-    object Profile : Route
+    data object Count : Route
+
+    @Serializable
+    data object CountHistoryList : Route
+
+    @Serializable
+    data object Profile : Route
 
     @Serializable
     data class FoodTarget(
@@ -37,4 +43,7 @@ sealed interface Route : NavKey {
         val proteins: Int? = null,
         val sugar: Int? = null
     ) : Route
+
+    @Serializable
+    data object Scanner : Route
 }

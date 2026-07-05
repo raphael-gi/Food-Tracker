@@ -33,7 +33,7 @@ fun CountedMealCell(modifier: Modifier = Modifier, item: CountedMealEntity) {
             )
 
             val date = Date(item.eatenAt).toInstant()
-            val format = DateTimeFormatter.ofPattern("dd MM yyyy").withZone(ZoneId.systemDefault())
+            val format = DateTimeFormatter.ofPattern("dd.MM.yyyy").withZone(ZoneId.systemDefault())
 
             Text(format.format(date))
         }

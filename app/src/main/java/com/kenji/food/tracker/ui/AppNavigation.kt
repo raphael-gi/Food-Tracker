@@ -9,19 +9,28 @@ import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDe
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.runtime.result.LocalResultEventBus
+import androidx.navigation3.runtime.result.rememberResultEventBusNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.kenji.food.tracker.ui.component.BottomBar
 import com.kenji.food.tracker.ui.screen.HomeScreen
 import com.kenji.food.tracker.ui.screen.count.CountHistoryListScreen
 import com.kenji.food.tracker.ui.screen.count.CountScreen
-import com.kenji.food.tracker.ui.screen.food.AddFoodScreen
+import com.kenji.food.tracker.ui.screen.food.FoodDetailScreen
 import com.kenji.food.tracker.ui.screen.food.FoodListScreen
+import com.kenji.food.tracker.ui.screen.food.UpsertFoodScreen
 import com.kenji.food.tracker.ui.screen.onboarding.OnboardingScreen
 import com.kenji.food.tracker.ui.screen.profile.FoodTargetScreen
 import com.kenji.food.tracker.ui.screen.profile.ProfileScreen
-import com.kenji.food.tracker.ui.screen.recipe.AddRecipeScreen
+import com.kenji.food.tracker.ui.screen.recipe.RecipeDetailScreen
 import com.kenji.food.tracker.ui.screen.recipe.RecipeListScreen
+import com.kenji.food.tracker.ui.screen.recipe.UpsertRecipeScreen
+import com.kenji.food.tracker.ui.screen.scan.ScannerScreen
+import com.kenji.food.tracker.ui.viewmodel.food.add.UpsertFoodViewModel
+import com.kenji.food.tracker.ui.viewmodel.food.detail.FoodDetailViewModel
 import com.kenji.food.tracker.ui.viewmodel.food.target.FoodTargetViewModel
+import com.kenji.food.tracker.ui.viewmodel.recipe.add.UpsertRecipeViewModel
+import com.kenji.food.tracker.ui.viewmodel.recipe.detail.RecipeDetailViewModel
 
 @Composable
 fun AppNavigation() {
@@ -30,7 +39,7 @@ fun AppNavigation() {
     Scaffold(
         bottomBar = {
             val currentRoute = backStack.lastOrNull()
-            if (currentRoute is Route) {
+            if (currentRoute != Route.Onboarding && currentRoute != Route.Scanner) {
                 BottomBar(currentRoute) { route ->
                     backStack.clear()
                     backStack.add(route)
@@ -44,7 +53,8 @@ fun AppNavigation() {
             onBack = { backStack.removeLastOrNull() },
             entryDecorators = listOf(
                 rememberSaveableStateHolderNavEntryDecorator(),
-                rememberViewModelStoreNavEntryDecorator()
+                rememberViewModelStoreNavEntryDecorator(),
+                rememberResultEventBusNavEntryDecorator()
             ),
             entryProvider = entryProvider {
                 entry<Route.Onboarding> {
@@ -67,10 +77,26 @@ fun AppNavigation() {
                     )
                 }
 
-                entry<Route.AddFood> {
-                    AddFoodScreen {
-                        backStack.removeLastOrNull()
-                    }
+                entry<Route.FoodDetail> { key ->
+                    FoodDetailScreen(
+                        viewModel = hiltViewModel<FoodDetailViewModel, FoodDetailViewModel.Factory>(
+                            creationCallback = { factory -> factory.create(key) }
+                        ),
+                        onPressEdit = { backStack.add(Route.UpsertFood(key.id)) },
+                        onBackPressed = { backStack.removeLastOrNull() }
+                    )
+                }
+
+                entry<Route.UpsertFood> { key ->
+                    UpsertFoodScreen(
+                        viewModel = hiltViewModel<UpsertFoodViewModel, UpsertFoodViewModel.Factory>(
+                            creationCallback = { factory ->
+                                factory.create(id = key.id)
+                            }
+                        ),
+                        onLaunchScanner = { backStack.add(Route.Scanner) },
+                        onNavBack = { backStack.removeLastOrNull() }
+                    )
                 }
 
                 entry<Route.RecipeList> {
@@ -80,17 +106,37 @@ fun AppNavigation() {
                     )
                 }
 
-                entry<Route.AddRecipe> {
-                    AddRecipeScreen {
-                        backStack.removeLastOrNull()
-                    }
+                entry<Route.RecipeDetail> { key ->
+                    RecipeDetailScreen(
+                        viewModel = hiltViewModel<RecipeDetailViewModel, RecipeDetailViewModel.Factory>(
+                            creationCallback = { factory -> factory.create(key.id) }
+                        ),
+                        onPressEdit = { backStack.add(Route.UpsertRecipe(key.id)) },
+                        onBackPressed = { backStack.removeLastOrNull() }
+                    )
+                }
+
+                entry<Route.UpsertRecipe> { key ->
+                    UpsertRecipeScreen(
+                        viewModel = hiltViewModel<UpsertRecipeViewModel, UpsertRecipeViewModel.Factory>(
+                            creationCallback = { factory -> factory.create(key.id) }
+                        ),
+                        onNavBack = {
+                            backStack.removeLastOrNull()
+                        }
+                    )
                 }
 
                 entry<Route.Count> {
-                    CountScreen {
-                        backStack.clear()
-                        backStack.add(Route.Home)
-                    }
+                    CountScreen(
+                        onLaunchCamera = {
+                            backStack.add(Route.Scanner)
+                        },
+                        onFinish = {
+                            backStack.clear()
+                            backStack.add(Route.Home)
+                        }
+                    )
                 }
 
                 entry<Route.CountHistoryList> {
@@ -106,14 +152,21 @@ fun AppNavigation() {
                 entry<Route.FoodTarget> { key ->
                     FoodTargetScreen(
                         viewModel = hiltViewModel<FoodTargetViewModel, FoodTargetViewModel.Factory>(
-                            creationCallback = { factory ->
-                                factory.create(key)
-                            }
+                            creationCallback = { factory -> factory.create(key) }
                         ),
                         onBackPressed = {
                             backStack.removeLastOrNull()
                         }
                     )
+                }
+
+                entry<Route.Scanner> {
+                    val resultBus = LocalResultEventBus.current
+
+                    ScannerScreen { result ->
+                        resultBus.sendResult(result)
+                        backStack.removeLastOrNull()
+                    }
                 }
             }
         )

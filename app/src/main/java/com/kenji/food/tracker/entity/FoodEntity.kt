@@ -15,5 +15,6 @@ data class FoodEntity(
     val quantity: Int,
     val isRecipe: Boolean,
     val unit: FoodUnit,
-    val lastUsed: Long? = null
+    val lastUsed: Long? = null,
+    val code: String? = null
 )

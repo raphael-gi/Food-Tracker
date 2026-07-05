@@ -6,11 +6,12 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.navigation3.runtime.NavKey
 import com.kenji.food.tracker.R
 import com.kenji.food.tracker.ui.Route
 
 @Composable
-fun BottomBar(currentRoute: Route?, onRoute: (Route) -> Unit) {
+fun BottomBar(currentRoute: NavKey?, onRoute: (Route) -> Unit) {
     NavigationBar {
         NavigationBarItem(
             selected = currentRoute == Route.CountHistoryList,

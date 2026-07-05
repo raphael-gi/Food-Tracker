@@ -6,24 +6,31 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import androidx.room.Upsert
 import com.kenji.food.tracker.entity.FoodEntity
 import com.kenji.food.tracker.entity.Recipe
 import com.kenji.food.tracker.entity.RecipeFoodEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FoodDao {
-    @Insert
-    suspend fun insert(foodEntity: FoodEntity): Long
+    @Upsert
+    suspend fun upsert(foodEntity: FoodEntity): Long
 
     @Insert
     suspend fun insertRecipeFood(recipeFood: List<RecipeFoodEntity>)
 
     @Transaction
-    suspend fun insertTest(recipe: Recipe) {
-        val createdRecipe = insert(recipe.food)
+    suspend fun upsertRecipe(recipe: Recipe) {
+        val createdRecipe = upsert(recipe.food)
+
+        val recipeId = recipe.food.id.takeIf { it > 0 } ?: createdRecipe.toInt()
+
+        deleteRecipeFood(recipeId.toLong())
+
         val recipeFoods = recipe.foods.map { food ->
             RecipeFoodEntity(
-                recipeId = createdRecipe.toInt(),
+                recipeId = recipeId,
                 foodId = food.id
             )
         }
@@ -31,8 +38,20 @@ interface FoodDao {
         insertRecipeFood(recipeFoods)
     }
 
+    @Query("DELETE FROM recipe_food WHERE recipeId = :recipeId")
+    suspend fun deleteRecipeFood(recipeId: Long)
+
     @Update
     suspend fun update(foodEntity: FoodEntity)
+
+    @Query("SELECT * FROM food WHERE id = :id")
+    fun getFoodById(id: Int): Flow<FoodEntity>
+
+    @Query("SELECT * FROM food WHERE id = :id")
+    fun getRecipeById(id: Int): Flow<Recipe>
+
+    @Query("SELECT * FROM food WHERE code = :code")
+    suspend fun getFoodByCode(code: String): List<FoodEntity>
 
     @Transaction
     @Query(
@@ -44,8 +63,15 @@ interface FoodDao {
     )
     fun getAll(): PagingSource<Int, Recipe>
 
-    @Query("SELECT * FROM food WHERE food.isRecipe = false ORDER BY food.lastUsed DESC, food.name")
-    fun getAllFoods(): PagingSource<Int, FoodEntity>
+    @Query(
+        """
+        SELECT *
+        FROM food
+        WHERE food.isRecipe = false
+        AND food.name LIKE :query
+        ORDER BY food.lastUsed DESC, food.name"""
+    )
+    fun getAllFoods(query: String): PagingSource<Int, FoodEntity>
 
     @Transaction
     @Query(

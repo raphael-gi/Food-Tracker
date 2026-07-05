@@ -25,6 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.result.ResultEffect
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -36,6 +37,7 @@ import com.kenji.food.tracker.entity.FoodUnit
 import com.kenji.food.tracker.entity.Recipe
 import com.kenji.food.tracker.ui.component.TopBar
 import com.kenji.food.tracker.ui.component.button.ActionButton
+import com.kenji.food.tracker.ui.component.button.ScanButton
 import com.kenji.food.tracker.ui.component.button.SelectionButton
 import com.kenji.food.tracker.ui.component.cell.FoodCell
 import com.kenji.food.tracker.ui.component.cell.RecipeCell
@@ -47,14 +49,24 @@ import com.kenji.food.tracker.ui.viewmodel.count.CountViewModel
 import kotlinx.coroutines.flow.flowOf
 
 @Composable
-fun CountScreen(viewModel: CountViewModel = hiltViewModel(), onFinish: () -> Unit) {
+fun CountScreen(
+    viewModel: CountViewModel = hiltViewModel(),
+    onLaunchCamera: () -> Unit,
+    onFinish: () -> Unit
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val foods = viewModel.meals.collectAsLazyPagingItems()
+
+    ResultEffect<String> { code ->
+        viewModel.onAction(CountAction.CodeScanned(code))
+    }
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
+                CountEffect.LaunchCamera -> onLaunchCamera()
                 CountEffect.Finish -> onFinish()
+                CountEffect.ScanNotFound -> {}
             }
         }
     }
@@ -109,6 +121,10 @@ fun CountContent(
 
         SelectionButton(text = R.string.selectFood) {
             onAction(CountAction.ToggleSelectMode)
+        }
+
+        ScanButton {
+            onAction(CountAction.LaunchCamera)
         }
 
         if (isSelectMode) {

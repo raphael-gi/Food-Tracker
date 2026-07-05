@@ -21,8 +21,8 @@ import kotlin.math.roundToInt
 
 @HiltViewModel
 class CountViewModel @Inject constructor(
-    foodDao: FoodDao,
-    private val countedMealDao: CountedMealDao
+    private val foodDao: FoodDao,
+    private val countedMealDao: CountedMealDao,
 ) : ViewModel() {
     private val _state = MutableStateFlow(CountState())
     val state = _state.asStateFlow()
@@ -37,10 +37,36 @@ class CountViewModel @Inject constructor(
 
     fun onAction(action: CountAction) {
         when (action) {
+            CountAction.LaunchCamera -> this.onLaunchCamera()
+            is CountAction.CodeScanned -> this.onCodeScanned(action.code)
             CountAction.ToggleSelectMode -> this.onToggleSelectMode()
             is CountAction.SelectMeal -> this.onSelectMeal(action.meal)
             is CountAction.SetMealQuantity -> this.onSetMealQuantity(action.input)
             CountAction.CountMeal -> this.onCountMeal()
+        }
+    }
+
+    private fun onLaunchCamera() {
+        viewModelScope.launch {
+            _effect.send(CountEffect.LaunchCamera)
+        }
+    }
+
+    private fun onCodeScanned(code: String) {
+        viewModelScope.launch {
+            val scannedFood = foodDao.getFoodByCode(code)
+
+            when (scannedFood.size) {
+                0 -> _effect.send(CountEffect.ScanNotFound)
+                1 -> onSelectMeal(
+                    Recipe(
+                        food = scannedFood.first(),
+                        foods = emptyList()
+                    )
+                )
+
+                else -> {}
+            }
         }
     }
 
@@ -100,10 +126,10 @@ class CountViewModel @Inject constructor(
                 id = 0,
                 name = recipe.food.name,
                 calories = (recipe.food.calories?.times(multiplier))?.roundToInt(),
-                carbs = recipe.food.carbs,
-                sugar = recipe.food.sugar,
-                protein = recipe.food.protein,
-                fats = recipe.food.fats,
+                carbs = (recipe.food.carbs?.times(multiplier))?.roundToInt(),
+                sugar = (recipe.food.sugar?.times(multiplier))?.roundToInt(),
+                protein = (recipe.food.protein?.times(multiplier))?.roundToInt(),
+                fats = (recipe.food.fats?.times(multiplier))?.roundToInt(),
             )
         }
 

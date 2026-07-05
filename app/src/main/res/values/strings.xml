@@ -4,17 +4,27 @@
     <string name="profile">Profile</string>
 
     <string name="foods">Foods</string>
+    <string name="food">Food</string>
+    <string name="recipe">Recipe</string>
     <string name="recipes">Recipes</string>
 
     <string name="start">Start</string>
     <string name="finish">Finish</string>
+    <string name="allow">Allow</string>
     <string name="add">Add</string>
+    <string name="scan">Scan</string>
+    <string name="barcodeScanned">Barcode Scanned</string>
+    <string name="create">Create</string>
     <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
     <string name="update">Update</string>
     <string name="welcome">Welcome</string>
     <string name="slogan">Track your calories…</string>
+    <string name="stopWastingTime">Stop wasting time!</string>
+    <string name="onboardingScanning">Scan food products to save time</string>
     <string name="onboardingContinue">Continue</string>
     <string name="getStarted">Get Started</string>
+    <string name="skip">Skip</string>
     <string name="confirm">Confirm</string>
     <string name="navigateBack">Navigate Back</string>
     <string name="history">History</string>
@@ -49,4 +59,12 @@
     <string name="fridayShort">Fri</string>
     <string name="saturdayShort">Sat</string>
     <string name="sundayShort">Sun</string>
+
+    <string name="search">Search</string>
+
+    <string name="noFoods">No Foods</string>
+    <string name="noRecipes">No Recipes</string>
+
+    <string name="check">Check</string>
+    <string name="barcodeScanning">Barcode scanning</string>
 </resources>

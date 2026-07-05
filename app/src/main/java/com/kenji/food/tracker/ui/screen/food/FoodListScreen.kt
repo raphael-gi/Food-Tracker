@@ -5,11 +5,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,15 +26,19 @@ import com.kenji.food.tracker.R
 import com.kenji.food.tracker.entity.FoodEntity
 import com.kenji.food.tracker.entity.FoodUnit
 import com.kenji.food.tracker.ui.Route
-import com.kenji.food.tracker.ui.component.TopBar
 import com.kenji.food.tracker.ui.component.button.AddButton
 import com.kenji.food.tracker.ui.component.button.DeleteButton
+import com.kenji.food.tracker.ui.component.button.NavigationButton
 import com.kenji.food.tracker.ui.component.cell.FoodCell
+import com.kenji.food.tracker.ui.component.info.NoData
+import com.kenji.food.tracker.ui.component.input.SearchField
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
 import com.kenji.food.tracker.ui.viewmodel.food.list.FoodListAction
+import com.kenji.food.tracker.ui.viewmodel.food.list.FoodListEffect
 import com.kenji.food.tracker.ui.viewmodel.food.list.FoodListViewModel
 import kotlinx.coroutines.flow.flowOf
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FoodListScreen(
     viewModel: FoodListViewModel = hiltViewModel(),
@@ -41,11 +48,23 @@ fun FoodListScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val items = viewModel.items.collectAsLazyPagingItems()
 
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is FoodListEffect.ItemSelected -> onNavigate(Route.FoodDetail(effect.item.id))
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
-            TopBar(
-                title = R.string.foods,
-                onBackPressed = onBackPressed,
+            CenterAlignedTopAppBar(
+                navigationIcon = { NavigationButton(onBackPressed) },
+                title = {
+                    SearchField(query = state.query) {
+                        viewModel.onAction(FoodListAction.Search(it))
+                    }
+                },
                 actions = {
                     AnimatedVisibility(state.selectedItems.isNotEmpty()) {
                         DeleteButton {
@@ -57,7 +76,7 @@ fun FoodListScreen(
         },
         floatingActionButton = {
             AddButton {
-                onNavigate(Route.AddFood)
+                onNavigate(Route.UpsertFood())
             }
         },
     ) { innerPadding ->
@@ -70,6 +89,7 @@ fun FoodListScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FoodList(
     modifier: Modifier = Modifier,
@@ -77,30 +97,40 @@ private fun FoodList(
     selectedItems: Set<Int>,
     onAction: (FoodListAction) -> Unit
 ) {
-    LazyColumn(modifier = modifier) {
-        items(count = items.itemCount, key = items.itemKey { it.id }) { index ->
-            val item = items[index]
-            if (item != null) {
-                val background = if (item.id in selectedItems) {
-                    MaterialTheme.colorScheme.secondaryContainer
-                } else {
-                    MaterialTheme.colorScheme.background
-                }
+    if (items.loadState.isIdle && items.itemCount == 0) {
+        NoData(
+            icon = R.drawable.meal,
+            iconDescription = R.string.food,
+            text = R.string.noFoods
+        )
+    } else {
+        LazyColumn(modifier = modifier) {
+            items(count = items.itemCount, key = items.itemKey { it.id }) { index ->
+                val item = items[index]
+                if (item != null) {
+                    val background = if (item.id in selectedItems) {
+                        MaterialTheme.colorScheme.secondaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.background
+                    }
 
-                FoodCell(
-                    modifier = Modifier
-                        .animateItem()
-                        .background(background)
-                        .combinedClickable(
-                            onLongClick = {
-                                onAction(FoodListAction.ToggleSelection(item.id))
-                            },
-                            onClick = {}
-                        ),
-                    item = item
-                )
-            } else {
-                Text("Unavailable")
+                    FoodCell(
+                        modifier = Modifier
+                            .animateItem()
+                            .background(background)
+                            .combinedClickable(
+                                onLongClick = {
+                                    onAction(FoodListAction.ToggleSelection(item.id))
+                                },
+                                onClick = {
+                                    onAction(FoodListAction.SelectItem(item))
+                                }
+                            ),
+                        item = item
+                    )
+                } else {
+                    Text("Unavailable")
+                }
             }
         }
     }
@@ -112,32 +142,23 @@ private fun FoodList(
 private fun PreviewFoodListScreen() {
     val items = flowOf(
         PagingData.from(
-            listOf(
+            (0..10).map {
                 FoodEntity(
-                    id = 1,
+                    id = it,
                     name = "Chicken",
                     calories = 25,
                     protein = 20,
                     quantity = 100,
                     isRecipe = false,
                     unit = FoodUnit.G
-                ),
-                FoodEntity(
-                    id = 2,
-                    name = "Chicken 2",
-                    calories = 25,
-                    quantity = 100,
-                    isRecipe = false,
-                    unit = FoodUnit.G
                 )
-            )
+            },
         )
     ).collectAsLazyPagingItems()
 
     FoodTrackerTheme {
         Surface {
             FoodList(
-                modifier = Modifier,
                 items = items,
                 selectedItems = emptySet()
             ) {}

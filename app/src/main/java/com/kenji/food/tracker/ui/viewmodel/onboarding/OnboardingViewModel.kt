@@ -28,25 +28,18 @@ class OnboardingViewModel @Inject constructor(private val profileDao: ProfileDao
             if (currentFoodTarget != null) {
                 _effect.send(OnboardingEffect.FinishOnboarding)
             } else {
-                _state.update { it.copy(currentStep = OnboardingStep.START) }
+                _state.update { it.copy(currentStep = OnboardingStep.CALORIE_INPUT) }
             }
         }
     }
 
     fun onAction(action: OnboardingAction) {
         when (action) {
-            OnboardingAction.Start -> this.onStart()
             OnboardingAction.StepBack -> this.onStepBack()
             OnboardingAction.ConfirmCalories -> this.onConfirmCalories()
             is OnboardingAction.SetCalorieTarget -> this.onSetCalories(action.input)
-            is OnboardingAction.SetProteinTarget -> this.onSetProtein(action.input)
-            is OnboardingAction.SetSugarTarget -> this.onSetSugar(action.input)
             OnboardingAction.Finish -> this.onFinish()
         }
-    }
-
-    private fun onStart() {
-        _state.update { it.copy(currentStep = OnboardingStep.CALORIE_INPUT) }
     }
 
     private fun onStepBack() {
@@ -61,22 +54,12 @@ class OnboardingViewModel @Inject constructor(private val profileDao: ProfileDao
             return
         }
 
-        _state.update { it.copy(currentStep = OnboardingStep.ADDITIONAL_INPUT) }
+        _state.update { it.copy(currentStep = OnboardingStep.SCAN_PERMISSION) }
     }
 
     private fun onSetCalories(input: String) {
         val calories = input.toIntOrNull()
         _state.update { it.copy(calorieTarget = calories) }
-    }
-
-    private fun onSetProtein(input: String) {
-        val protein = input.toIntOrNull()
-        _state.update { it.copy(proteinTarget = protein) }
-    }
-
-    private fun onSetSugar(input: String) {
-        val sugar = input.toIntOrNull()
-        _state.update { it.copy(sugarTarget = sugar) }
     }
 
     private fun onFinish() {
@@ -85,8 +68,8 @@ class OnboardingViewModel @Inject constructor(private val profileDao: ProfileDao
         val foodTarget = FoodTargetEntity(
             id = 0,
             calories = calorieTarget,
-            protein = state.value.proteinTarget,
-            sugar = state.value.sugarTarget
+            protein = null,
+            sugar = null
         )
 
         viewModelScope.launch {

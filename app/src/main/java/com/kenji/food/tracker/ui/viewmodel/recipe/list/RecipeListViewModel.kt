@@ -6,9 +6,12 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import com.kenji.food.tracker.db.dao.FoodDao
+import com.kenji.food.tracker.entity.Recipe
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -17,6 +20,9 @@ import javax.inject.Inject
 class RecipeListViewModel @Inject constructor(private val foodDao: FoodDao) : ViewModel() {
     private val _state = MutableStateFlow(RecipeListState())
     val state = _state.asStateFlow()
+
+    private val _effect = Channel<RecipeListEffect>()
+    val effect = _effect.receiveAsFlow()
 
     val items = Pager(
         config = PagingConfig(pageSize = 5),
@@ -28,6 +34,7 @@ class RecipeListViewModel @Inject constructor(private val foodDao: FoodDao) : Vi
             RecipeListAction.NextPage -> {}
             is RecipeListAction.ToggleSelection -> this.onToggleSelection(action.id)
             RecipeListAction.DeleteSelected -> this.onDeleteSelected()
+            is RecipeListAction.SelectItem -> this.onSelectItem(action.item)
         }
     }
 
@@ -49,6 +56,12 @@ class RecipeListViewModel @Inject constructor(private val foodDao: FoodDao) : Vi
         viewModelScope.launch {
             foodDao.delete(selectedIds)
             _state.update { it.copy(selectedItems = emptySet()) }
+        }
+    }
+
+    private fun onSelectItem(item: Recipe) {
+        viewModelScope.launch {
+            _effect.send(RecipeListEffect.ItemSelected(item))
         }
     }
 }

@@ -3,6 +3,7 @@ package com.kenji.food.tracker.ui.screen.recipe
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
@@ -10,6 +11,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,8 +30,10 @@ import com.kenji.food.tracker.ui.component.TopBar
 import com.kenji.food.tracker.ui.component.button.AddButton
 import com.kenji.food.tracker.ui.component.button.DeleteButton
 import com.kenji.food.tracker.ui.component.cell.RecipeCell
+import com.kenji.food.tracker.ui.component.info.NoData
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
 import com.kenji.food.tracker.ui.viewmodel.recipe.list.RecipeListAction
+import com.kenji.food.tracker.ui.viewmodel.recipe.list.RecipeListEffect
 import com.kenji.food.tracker.ui.viewmodel.recipe.list.RecipeListViewModel
 import kotlinx.coroutines.flow.flowOf
 
@@ -41,6 +45,14 @@ fun RecipeListScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val items = viewModel.items.collectAsLazyPagingItems()
+
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is RecipeListEffect.ItemSelected -> onNavigate(Route.RecipeDetail(effect.item.food.id))
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -58,7 +70,7 @@ fun RecipeListScreen(
         },
         floatingActionButton = {
             AddButton {
-                onNavigate(Route.AddRecipe)
+                onNavigate(Route.UpsertRecipe())
             }
         }
     ) { innerPadding ->
@@ -78,30 +90,42 @@ private fun RecipeList(
     selectedItems: Set<Int>,
     onAction: (RecipeListAction) -> Unit
 ) {
-    LazyColumn(modifier = modifier) {
-        items(count = items.itemCount, key = items.itemKey { it.food.id }) { index ->
-            val item = items[index]
-            if (item != null) {
-                val background = if (item.food.id in selectedItems) {
-                    MaterialTheme.colorScheme.secondaryContainer
-                } else {
-                    MaterialTheme.colorScheme.background
-                }
+    Box(modifier = modifier) {
+        if (items.loadState.isIdle && items.itemCount == 0) {
+            NoData(
+                icon = R.drawable.meal,
+                iconDescription = R.string.recipe,
+                text = R.string.noRecipes
+            )
+        } else {
+            LazyColumn {
+                items(count = items.itemCount, key = items.itemKey { it.food.id }) { index ->
+                    val item = items[index]
+                    if (item != null) {
+                        val background = if (item.food.id in selectedItems) {
+                            MaterialTheme.colorScheme.secondaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.background
+                        }
 
-                RecipeCell(
-                    modifier = Modifier
-                        .animateItem()
-                        .background(background)
-                        .combinedClickable(
-                            onLongClick = {
-                                onAction(RecipeListAction.ToggleSelection(item.food.id))
-                            },
-                            onClick = {}
-                        ),
-                    item = item
-                )
-            } else {
-                Text("Unavailable")
+                        RecipeCell(
+                            modifier = Modifier
+                                .animateItem()
+                                .background(background)
+                                .combinedClickable(
+                                    onLongClick = {
+                                        onAction(RecipeListAction.ToggleSelection(item.food.id))
+                                    },
+                                    onClick = {
+                                        onAction(RecipeListAction.SelectItem(item))
+                                    }
+                                ),
+                            item = item
+                        )
+                    } else {
+                        Text("Unavailable")
+                    }
+                }
             }
         }
     }
