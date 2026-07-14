@@ -5,12 +5,12 @@ import com.kenji.food.tracker.entity.FoodUnit
 data class UpsertFoodState(
     val name: String = "",
     val calories: Int? = null,
-    val carbs: Int? = null,
-    val proteins: Int? = null,
-    val fats: Int? = null,
-    val sugar: Int? = null,
+    val carbs: Double? = null,
+    val proteins: Double? = null,
+    val fats: Double? = null,
+    val sugar: Double? = null,
     val unit: FoodUnit? = FoodUnit.G,
-    val quantity: Int? = 100,
+    val quantity: Double? = 100.0,
     val code: String? = null,
     val isCreate: Boolean,
     val isLoading: Boolean

@@ -15,5 +15,5 @@ data class Recipe(
             entityColumn = "foodId"
         ),
     )
-    val foods: List<FoodEntity>
+    val foods: List<RecipeFoodEntity>
 )

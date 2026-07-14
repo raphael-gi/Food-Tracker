@@ -9,6 +9,7 @@ import com.kenji.food.tracker.db.dao.CountedMealDao
 import com.kenji.food.tracker.db.dao.FoodDao
 import com.kenji.food.tracker.entity.CountedMealEntity
 import com.kenji.food.tracker.entity.Recipe
+import com.kenji.food.tracker.util.CalorieCalculator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +18,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.math.roundToInt
 
 @HiltViewModel
 class CountViewModel @Inject constructor(
@@ -88,16 +88,13 @@ class CountViewModel @Inject constructor(
     }
 
     private fun onSetMealQuantity(input: String) {
-        val quantity = input.toIntOrNull() ?: return
+        val quantity = input.toDoubleOrNull()
 
         _state.update {
             it.copy(
                 quantity = quantity,
                 countedMeal = it.selectedMeal?.let { recipe ->
-                    getCountedMealOfRecipe(
-                        recipe,
-                        quantity
-                    )
+                    getCountedMealOfRecipe(recipe, quantity ?: 0.0)
                 }
             )
         }
@@ -118,39 +115,11 @@ class CountViewModel @Inject constructor(
      * @param recipe The recipe to calculate the stats from
      * @param quantity The quantity to multiply the food by
      */
-    private fun getCountedMealOfRecipe(recipe: Recipe, quantity: Int): CountedMealEntity {
-        if (!recipe.food.isRecipe) {
-            val multiplier = quantity.toFloat() / recipe.food.quantity.toFloat()
-
-            return CountedMealEntity(
-                id = 0,
-                name = recipe.food.name,
-                calories = (recipe.food.calories?.times(multiplier))?.roundToInt(),
-                carbs = (recipe.food.carbs?.times(multiplier))?.roundToInt(),
-                sugar = (recipe.food.sugar?.times(multiplier))?.roundToInt(),
-                protein = (recipe.food.protein?.times(multiplier))?.roundToInt(),
-                fats = (recipe.food.fats?.times(multiplier))?.roundToInt(),
-            )
+    private fun getCountedMealOfRecipe(recipe: Recipe, quantity: Double): CountedMealEntity {
+        if (recipe.food.isRecipe) {
+            return CalorieCalculator.calculateCountedRecipe(recipe)
         }
 
-        val initialValue = CountedMealEntity(
-            id = 0,
-            name = recipe.food.name,
-            calories = 0,
-            carbs = 0,
-            sugar = 0,
-            protein = 0,
-            fats = 0,
-        )
-
-        return recipe.foods.fold(initialValue) { acc, entity ->
-            return@fold acc.copy(
-                calories = acc.calories?.plus((entity.calories ?: 0)),
-                carbs = acc.carbs?.plus((entity.carbs ?: 0)),
-                sugar = acc.sugar?.plus((entity.sugar ?: 0)),
-                protein = acc.protein?.plus((entity.protein ?: 0)),
-                fats = acc.fats?.plus((entity.fats ?: 0)),
-            )
-        }
+        return CalorieCalculator.calculateCountedFood(recipe.food, quantity)
     }
 }

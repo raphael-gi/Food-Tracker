@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -99,7 +100,7 @@ fun CountContent(
     foods: LazyPagingItems<Recipe>,
     selectedMeal: Recipe?,
     countedMeal: CountedMealEntity?,
-    quantity: Int?,
+    quantity: Double?,
     isSelectMode: Boolean,
     onAction: (CountAction) -> Unit
 ) {
@@ -146,7 +147,7 @@ fun CountContent(
 private fun FoodCard(
     recipe: Recipe,
     countedMeal: CountedMealEntity,
-    quantity: Int?,
+    quantity: Double?,
     onSetQuantity: (String) -> Unit
 ) {
     Column(
@@ -215,7 +216,9 @@ private fun FoodSelectionCell(item: Recipe, onSelect: () -> Unit) {
         )
     } else {
         FoodCell(
-            modifier = Modifier.clickable { onSelect() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onSelect() },
             item = item.food
         )
     }
@@ -236,8 +239,8 @@ private fun CountContentPreview() {
             id = 0, isRecipe = false,
             name = "Chicken",
             calories = 123,
-            protein = 20,
-            quantity = 100,
+            protein = 20.0,
+            quantity = 100.0,
             unit = FoodUnit.G
         ),
         foods = emptyList()
@@ -253,7 +256,7 @@ private fun CountContentPreview() {
                     name = "abc",
                     calories = 5,
                 ),
-                quantity = 5,
+                quantity = 5.0,
                 isSelectMode = false
             ) { }
         }

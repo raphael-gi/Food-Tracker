@@ -7,7 +7,7 @@ data class CountState(
     val isSelectMode: Boolean = false,
     val selectedMeal: Recipe? = null,
     val countedMeal: CountedMealEntity? = null,
-    val quantity: Int? = null,
+    val quantity: Double? = null,
 )
 
 sealed interface CountAction {

@@ -143,7 +143,7 @@ private fun PreviewRecipeListScreen() {
                         id = 1,
                         name = "Chicken",
                         calories = 5,
-                        quantity = 100,
+                        quantity = 100.0,
                         isRecipe = true,
                         unit = FoodUnit.G
                     ),

@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.kenji.food.tracker.entity.CountedMealEntity
 import com.kenji.food.tracker.ui.component.Tag
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
+import com.kenji.food.tracker.util.Formatter
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Date
@@ -46,13 +47,13 @@ private fun FoodTags(item: CountedMealEntity) {
     Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
         Tag(text = item.calories.toString())
         item.carbs?.let {
-            Tag(text = it.toString())
+            Tag(text = Formatter.formatDecimal(it))
         }
         item.protein?.let {
-            Tag(text = it.toString())
+            Tag(text = Formatter.formatDecimal(it))
         }
         item.fats?.let {
-            Tag(text = it.toString())
+            Tag(text = Formatter.formatDecimal(it))
         }
     }
 }
@@ -65,7 +66,7 @@ private fun PreviewFoodListScreen() {
         id = 1,
         name = "Chicken",
         calories = 25,
-        protein = 20,
+        protein = 20.0,
     )
 
     FoodTrackerTheme {

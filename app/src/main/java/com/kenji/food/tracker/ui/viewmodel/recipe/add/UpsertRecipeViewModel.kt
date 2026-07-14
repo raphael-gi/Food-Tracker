@@ -9,6 +9,7 @@ import com.kenji.food.tracker.db.dao.FoodDao
 import com.kenji.food.tracker.entity.FoodEntity
 import com.kenji.food.tracker.entity.FoodUnit
 import com.kenji.food.tracker.entity.Recipe
+import com.kenji.food.tracker.entity.RecipeFoodEntity
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -53,7 +54,7 @@ class UpsertRecipeViewModel @AssistedInject constructor(
                     _state.update {
                         it.copy(
                             name = recipe.food.name,
-                            selectedFoods = recipe.foods.associateBy { food -> food.id },
+                            selectedFoods = recipe.foods.associateBy { food -> food.foodId },
                             isLoading = false
                         )
                     }
@@ -67,6 +68,11 @@ class UpsertRecipeViewModel @AssistedInject constructor(
             is UpsertRecipeAction.SetName -> this.onSetName(action.name)
             UpsertRecipeAction.ToggleSelectMode -> this.onToggleSelectMode()
             is UpsertRecipeAction.ToggleSelection -> this.onToggleSelection(action.food)
+            is UpsertRecipeAction.SetRecipeQuantity -> this.onSetRecipeQuantity(
+                action.food,
+                action.input
+            )
+
             UpsertRecipeAction.Create -> this.onCreate()
         }
     }
@@ -84,10 +90,36 @@ class UpsertRecipeViewModel @AssistedInject constructor(
             val newFoods = if (it.selectedFoods.contains(food.id)) {
                 it.selectedFoods - food.id
             } else {
-                it.selectedFoods + (food.id to food)
+                val recipeFood = RecipeFoodEntity(
+                    recipeId = 0,
+                    foodId = food.id,
+                    food = food,
+                    recipeQuantity = food.quantity
+                )
+
+                it.selectedFoods + (food.id to recipeFood)
             }
 
             it.copy(selectedFoods = newFoods)
+        }
+    }
+
+    private fun onSetRecipeQuantity(food: FoodEntity, input: String) {
+        val recipeQuantity = input.toDoubleOrNull() ?: return
+
+        _state.update {
+            val newRecipeFoods = it.selectedFoods.mapValues { entry ->
+                if (entry.key == food.id) {
+                    RecipeFoodEntity(
+                        recipeId = 0,
+                        foodId = food.id,
+                        food = food,
+                        recipeQuantity = recipeQuantity
+                    )
+                } else entry.value
+            }
+
+            it.copy(selectedFoods = newRecipeFoods)
         }
     }
 
@@ -99,7 +131,7 @@ class UpsertRecipeViewModel @AssistedInject constructor(
             name = name,
             calories = null,
             protein = null,
-            quantity = 5,
+            quantity = 1.0,
             isRecipe = true,
             unit = FoodUnit.G,
         )

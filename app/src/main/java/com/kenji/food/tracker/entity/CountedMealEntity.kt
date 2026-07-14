@@ -9,9 +9,9 @@ data class CountedMealEntity(
     @PrimaryKey(autoGenerate = true) val id: Int,
     val name: String,
     val calories: Int?,
-    val carbs: Int? = null,
-    val sugar: Int? = null,
-    val protein: Int? = null,
-    val fats: Int? = null,
+    val carbs: Double? = null,
+    val sugar: Double? = null,
+    val protein: Double? = null,
+    val fats: Double? = null,
     val eatenAt: Long = Instant.now().toEpochMilli()
 )

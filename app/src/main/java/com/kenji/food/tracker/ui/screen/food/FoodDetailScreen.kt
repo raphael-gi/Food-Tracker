@@ -95,7 +95,7 @@ private fun FoodDetailPreview() {
         calories = 100,
         isRecipe = false,
         unit = FoodUnit.G,
-        quantity = 100
+        quantity = 100.0
     )
 
     FoodTrackerTheme {

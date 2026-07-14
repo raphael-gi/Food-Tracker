@@ -84,22 +84,22 @@ class UpsertFoodViewModel @AssistedInject constructor(
     }
 
     private fun onSetCarbs(input: String) {
-        val carbs = input.toIntOrNull()
+        val carbs = input.toDoubleOrNull()
         _state.update { it.copy(carbs = carbs) }
     }
 
     private fun onSetProtein(input: String) {
-        val protein = input.toIntOrNull()
+        val protein = input.toDoubleOrNull()
         _state.update { it.copy(proteins = protein) }
     }
 
     private fun onSetFats(input: String) {
-        val fats = input.toIntOrNull()
+        val fats = input.toDoubleOrNull()
         _state.update { it.copy(fats = fats) }
     }
 
     private fun onSetSugar(input: String) {
-        val sugar = input.toIntOrNull()
+        val sugar = input.toDoubleOrNull()
         _state.update { it.copy(sugar = sugar) }
     }
 
@@ -113,7 +113,7 @@ class UpsertFoodViewModel @AssistedInject constructor(
     }
 
     private fun onSetQuantity(input: String) {
-        val quantity = input.toIntOrNull()
+        val quantity = input.toDoubleOrNull()
         _state.update { it.copy(quantity = quantity) }
     }
 

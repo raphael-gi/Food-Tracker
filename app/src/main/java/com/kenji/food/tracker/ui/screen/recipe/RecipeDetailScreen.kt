@@ -15,6 +15,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kenji.food.tracker.entity.FoodEntity
 import com.kenji.food.tracker.entity.FoodUnit
 import com.kenji.food.tracker.entity.Recipe
+import com.kenji.food.tracker.entity.RecipeFoodEntity
 import com.kenji.food.tracker.ui.component.FullScreenLoading
 import com.kenji.food.tracker.ui.component.button.EditButton
 import com.kenji.food.tracker.ui.component.button.NavigationButton
@@ -63,8 +64,8 @@ fun RecipeDetailScreen(
 @Composable
 private fun FoodDetailContent(modifier: Modifier = Modifier, recipe: Recipe) {
     Column(modifier = modifier) {
-        recipe.foods.forEach { food ->
-            Text(food.name)
+        recipe.foods.forEach { recipeFood ->
+            Text(recipeFood.food.name)
         }
     }
 }
@@ -80,16 +81,21 @@ private fun FoodDetailPreview() {
             calories = 0,
             isRecipe = true,
             unit = FoodUnit.G,
-            quantity = 100
+            quantity = 100.0
         ),
         foods = listOf(
-            FoodEntity(
-                id = 0,
-                name = "Chicken",
-                calories = 100,
-                isRecipe = false,
-                unit = FoodUnit.G,
-                quantity = 100
+            RecipeFoodEntity(
+                recipeId = 0,
+                foodId = 1,
+                food = FoodEntity(
+                    id = 1,
+                    name = "Chicken",
+                    calories = 100,
+                    isRecipe = false,
+                    unit = FoodUnit.G,
+                    quantity = 100.0
+                ),
+                recipeQuantity = 0.0
             )
         )
     )

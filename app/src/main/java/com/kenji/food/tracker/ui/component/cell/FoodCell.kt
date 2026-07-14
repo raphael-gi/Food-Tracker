@@ -16,13 +16,12 @@ import com.kenji.food.tracker.entity.FoodEntity
 import com.kenji.food.tracker.entity.FoodUnit
 import com.kenji.food.tracker.ui.component.Tag
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
+import com.kenji.food.tracker.util.Formatter
 
 @Composable
 fun FoodCell(modifier: Modifier = Modifier, item: FoodEntity) {
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(10.dp)
+        modifier = modifier.padding(10.dp)
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(
@@ -30,7 +29,7 @@ fun FoodCell(modifier: Modifier = Modifier, item: FoodEntity) {
                 style = MaterialTheme.typography.titleMedium
             )
             Text(
-                text = "${item.quantity}${item.unit.name.lowercase()}",
+                text = "${Formatter.formatDecimal(item.quantity)}${item.unit.name.lowercase()}",
                 style = MaterialTheme.typography.labelMedium
             )
         }
@@ -43,13 +42,13 @@ private fun FoodTags(item: FoodEntity) {
     Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
         Tag(text = item.calories.toString())
         item.carbs?.let {
-            Tag(text = it.toString())
+            Tag(text = Formatter.formatDecimal(it))
         }
         item.protein?.let {
-            Tag(text = it.toString())
+            Tag(text = Formatter.formatDecimal(it))
         }
         item.fats?.let {
-            Tag(text = it.toString())
+            Tag(text = Formatter.formatDecimal(it))
         }
     }
 }
@@ -62,8 +61,8 @@ private fun PreviewFoodListScreen() {
         id = 1,
         name = "Chicken",
         calories = 25,
-        protein = 20,
-        quantity = 100,
+        protein = 20.0,
+        quantity = 100.0,
         isRecipe = false,
         unit = FoodUnit.G
     )

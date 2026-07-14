@@ -1,6 +1,7 @@
 package com.kenji.food.tracker.entity
 
 import androidx.room.ColumnInfo
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
 
@@ -26,5 +27,7 @@ import androidx.room.ForeignKey
 )
 data class RecipeFoodEntity(
     @ColumnInfo(index = true) val recipeId: Int,
-    @ColumnInfo(index = true) val foodId: Int
+    @ColumnInfo(index = true) val foodId: Int,
+    val recipeQuantity: Double,
+    @Embedded val food: FoodEntity
 )

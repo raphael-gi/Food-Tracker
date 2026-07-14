@@ -3,6 +3,7 @@ package com.kenji.food.tracker.ui.screen.food
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -116,6 +117,7 @@ private fun FoodList(
 
                     FoodCell(
                         modifier = Modifier
+                            .fillMaxWidth()
                             .animateItem()
                             .background(background)
                             .combinedClickable(
@@ -147,8 +149,8 @@ private fun PreviewFoodListScreen() {
                     id = it,
                     name = "Chicken",
                     calories = 25,
-                    protein = 20,
-                    quantity = 100,
+                    protein = 20.0,
+                    quantity = 100.0,
                     isRecipe = false,
                     unit = FoodUnit.G
                 )

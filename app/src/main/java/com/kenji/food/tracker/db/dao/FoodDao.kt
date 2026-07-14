@@ -28,12 +28,7 @@ interface FoodDao {
 
         deleteRecipeFood(recipeId.toLong())
 
-        val recipeFoods = recipe.foods.map { food ->
-            RecipeFoodEntity(
-                recipeId = recipeId,
-                foodId = food.id
-            )
-        }
+        val recipeFoods = recipe.foods.map { recipeFood -> recipeFood.copy(recipeId = recipeId) }
 
         insertRecipeFood(recipeFoods)
     }

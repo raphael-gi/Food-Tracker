@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "e21498fcd2d82fe0398aa1962e46c975",
+    "identityHash": "800f4cdc67297ec60894c8ffbf717c0e",
     "entities": [
       {
         "tableName": "food",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `calories` INTEGER, `carbs` INTEGER, `sugar` INTEGER, `protein` INTEGER, `fats` INTEGER, `quantity` INTEGER NOT NULL, `isRecipe` INTEGER NOT NULL, `unit` TEXT NOT NULL, `lastUsed` INTEGER, `code` TEXT)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `calories` INTEGER, `carbs` REAL, `sugar` REAL, `protein` REAL, `fats` REAL, `quantity` REAL NOT NULL, `isRecipe` INTEGER NOT NULL, `unit` TEXT NOT NULL, `lastUsed` INTEGER, `code` TEXT)",
         "fields": [
           {
             "fieldPath": "id",
@@ -28,27 +28,27 @@
           {
             "fieldPath": "carbs",
             "columnName": "carbs",
-            "affinity": "INTEGER"
+            "affinity": "REAL"
           },
           {
             "fieldPath": "sugar",
             "columnName": "sugar",
-            "affinity": "INTEGER"
+            "affinity": "REAL"
           },
           {
             "fieldPath": "protein",
             "columnName": "protein",
-            "affinity": "INTEGER"
+            "affinity": "REAL"
           },
           {
             "fieldPath": "fats",
             "columnName": "fats",
-            "affinity": "INTEGER"
+            "affinity": "REAL"
           },
           {
             "fieldPath": "quantity",
             "columnName": "quantity",
-            "affinity": "INTEGER",
+            "affinity": "REAL",
             "notNull": true
           },
           {
@@ -83,7 +83,7 @@
       },
       {
         "tableName": "recipe_food",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`recipeId` INTEGER NOT NULL, `foodId` INTEGER NOT NULL, PRIMARY KEY(`recipeId`, `foodId`), FOREIGN KEY(`recipeId`) REFERENCES `food`(`id`) ON UPDATE CASCADE ON DELETE CASCADE , FOREIGN KEY(`foodId`) REFERENCES `food`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`recipeId` INTEGER NOT NULL, `foodId` INTEGER NOT NULL, `recipeQuantity` REAL NOT NULL, `id` INTEGER NOT NULL, `name` TEXT NOT NULL, `calories` INTEGER, `carbs` REAL, `sugar` REAL, `protein` REAL, `fats` REAL, `quantity` REAL NOT NULL, `isRecipe` INTEGER NOT NULL, `unit` TEXT NOT NULL, `lastUsed` INTEGER, `code` TEXT, PRIMARY KEY(`recipeId`, `foodId`), FOREIGN KEY(`recipeId`) REFERENCES `food`(`id`) ON UPDATE CASCADE ON DELETE CASCADE , FOREIGN KEY(`foodId`) REFERENCES `food`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "recipeId",
@@ -96,6 +96,77 @@
             "columnName": "foodId",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "recipeQuantity",
+            "columnName": "recipeQuantity",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "food.id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "food.name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "food.calories",
+            "columnName": "calories",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "food.carbs",
+            "columnName": "carbs",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "food.sugar",
+            "columnName": "sugar",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "food.protein",
+            "columnName": "protein",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "food.fats",
+            "columnName": "fats",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "food.quantity",
+            "columnName": "quantity",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "food.isRecipe",
+            "columnName": "isRecipe",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "food.unit",
+            "columnName": "unit",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "food.lastUsed",
+            "columnName": "lastUsed",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "food.code",
+            "columnName": "code",
+            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -152,7 +223,7 @@
       },
       {
         "tableName": "counted_meal",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `calories` INTEGER, `carbs` INTEGER, `sugar` INTEGER, `protein` INTEGER, `fats` INTEGER, `eatenAt` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `calories` INTEGER, `carbs` REAL, `sugar` REAL, `protein` REAL, `fats` REAL, `eatenAt` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -174,22 +245,22 @@
           {
             "fieldPath": "carbs",
             "columnName": "carbs",
-            "affinity": "INTEGER"
+            "affinity": "REAL"
           },
           {
             "fieldPath": "sugar",
             "columnName": "sugar",
-            "affinity": "INTEGER"
+            "affinity": "REAL"
           },
           {
             "fieldPath": "protein",
             "columnName": "protein",
-            "affinity": "INTEGER"
+            "affinity": "REAL"
           },
           {
             "fieldPath": "fats",
             "columnName": "fats",
-            "affinity": "INTEGER"
+            "affinity": "REAL"
           },
           {
             "fieldPath": "eatenAt",
@@ -248,7 +319,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e21498fcd2d82fe0398aa1962e46c975')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '800f4cdc67297ec60894c8ffbf717c0e')"
     ]
   }
 }

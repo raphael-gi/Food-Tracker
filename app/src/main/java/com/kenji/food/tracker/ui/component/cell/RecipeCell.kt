@@ -11,8 +11,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.kenji.food.tracker.entity.FoodEntity
 import com.kenji.food.tracker.entity.Recipe
+import com.kenji.food.tracker.entity.RecipeFoodEntity
 import com.kenji.food.tracker.ui.component.Tag
 
 @Composable
@@ -31,10 +31,10 @@ fun RecipeCell(modifier: Modifier = Modifier, item: Recipe) {
 }
 
 @Composable
-private fun RecipeTags(foods: List<FoodEntity>) {
+private fun RecipeTags(foods: List<RecipeFoodEntity>) {
     LazyRow(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
         items(foods) { food ->
-            Tag(text = food.name)
+            Tag(text = food.food.name)
         }
     }
 }
