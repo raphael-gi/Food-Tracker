@@ -24,7 +24,7 @@ import com.google.mlkit.vision.barcode.common.Barcode
 fun ScannerScreen(onResult: (String) -> Unit) {
     val context = LocalContext.current
 
-    val options = BarcodeScannerOptions.Builder()
+    val barcodeOptions = BarcodeScannerOptions.Builder()
         .setBarcodeFormats(
             Barcode.FORMAT_QR_CODE,
             Barcode.FORMAT_CODABAR,
@@ -37,7 +37,7 @@ fun ScannerScreen(onResult: (String) -> Unit) {
         )
         .build()
 
-    val barcodeScanner = BarcodeScanning.getClient(options)
+    val barcodeScanner = BarcodeScanning.getClient(barcodeOptions)
 
     var hasScanned by remember { mutableStateOf(false) }
 
@@ -55,9 +55,9 @@ fun ScannerScreen(onResult: (String) -> Unit) {
                         return@MlKitAnalyzer
                     }
 
-                    val scanResult = result.getValue(barcodeScanner)
+                    val barcodeScannerResult = result.getValue(barcodeScanner)
 
-                    val rawValue = scanResult?.firstOrNull()?.rawValue
+                    val rawValue = barcodeScannerResult?.firstOrNull()?.rawValue
                     if (rawValue != null && !hasScanned) {
                         hasScanned = true
                         onResult(rawValue)

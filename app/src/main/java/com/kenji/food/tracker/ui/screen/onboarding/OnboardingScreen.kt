@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -152,7 +153,10 @@ private fun ScanPermission(onAction: (OnboardingAction) -> Unit) {
         floatingActionButtonPosition = FabPosition.Center,
         floatingActionButton = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                SelectionButton(text = R.string.skip) {
+                SelectionButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = R.string.skip
+                ) {
                     onAction(OnboardingAction.Finish)
                 }
 

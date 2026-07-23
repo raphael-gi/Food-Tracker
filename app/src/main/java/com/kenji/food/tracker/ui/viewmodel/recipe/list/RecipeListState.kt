@@ -4,13 +4,15 @@ import com.kenji.food.tracker.entity.Recipe
 
 data class RecipeListState(
     val isLoading: Boolean = false,
-    val selectedItems: Set<Int> = emptySet()
+    val selectedItems: Set<Int> = emptySet(),
+    val query: String = ""
 )
 
 sealed interface RecipeListAction {
     data object NextPage : RecipeListAction
     data class ToggleSelection(val id: Int) : RecipeListAction
     data object DeleteSelected : RecipeListAction
+    data class Search(val query: String) : RecipeListAction
     data class SelectItem(val item: Recipe) : RecipeListAction
 }
 

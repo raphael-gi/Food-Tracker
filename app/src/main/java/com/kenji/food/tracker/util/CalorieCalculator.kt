@@ -38,7 +38,7 @@ object CalorieCalculator {
         )
     }
 
-    fun calculateCountedRecipe(recipe: Recipe): CountedMealEntity {
+    fun calculateCountedRecipe(recipe: Recipe, quantity: Double): CountedMealEntity {
         val initialValue = CountedMealEntity(
             id = 0,
             name = recipe.food.name,
@@ -50,7 +50,7 @@ object CalorieCalculator {
         )
 
         return recipe.foods.fold(initialValue) { acc, entity ->
-            val multiplier = entity.recipeQuantity / entity.food.quantity
+            val multiplier = quantity * (entity.recipeQuantity / entity.food.quantity)
 
             return@fold acc.copy(
                 calories = acc.calories?.plus(

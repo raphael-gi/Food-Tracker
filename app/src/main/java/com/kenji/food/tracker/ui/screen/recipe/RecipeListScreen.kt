@@ -6,6 +6,8 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -26,17 +28,19 @@ import com.kenji.food.tracker.entity.FoodEntity
 import com.kenji.food.tracker.entity.FoodUnit
 import com.kenji.food.tracker.entity.Recipe
 import com.kenji.food.tracker.ui.Route
-import com.kenji.food.tracker.ui.component.TopBar
 import com.kenji.food.tracker.ui.component.button.AddButton
 import com.kenji.food.tracker.ui.component.button.DeleteButton
+import com.kenji.food.tracker.ui.component.button.NavigationButton
 import com.kenji.food.tracker.ui.component.cell.RecipeCell
 import com.kenji.food.tracker.ui.component.info.NoData
+import com.kenji.food.tracker.ui.component.input.SearchField
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
 import com.kenji.food.tracker.ui.viewmodel.recipe.list.RecipeListAction
 import com.kenji.food.tracker.ui.viewmodel.recipe.list.RecipeListEffect
 import com.kenji.food.tracker.ui.viewmodel.recipe.list.RecipeListViewModel
 import kotlinx.coroutines.flow.flowOf
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeListScreen(
     viewModel: RecipeListViewModel = hiltViewModel(),
@@ -56,9 +60,13 @@ fun RecipeListScreen(
 
     Scaffold(
         topBar = {
-            TopBar(
-                title = R.string.recipes,
-                onBackPressed = onBackPressed,
+            CenterAlignedTopAppBar(
+                navigationIcon = { NavigationButton(onBackPressed) },
+                title = {
+                    SearchField(query = state.query) {
+                        viewModel.onAction(RecipeListAction.Search(it))
+                    }
+                },
                 actions = {
                     AnimatedVisibility(state.selectedItems.isNotEmpty()) {
                         DeleteButton {

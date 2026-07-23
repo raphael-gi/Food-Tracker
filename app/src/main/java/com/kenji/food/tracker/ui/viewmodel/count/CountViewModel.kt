@@ -75,7 +75,8 @@ class CountViewModel @Inject constructor(
     }
 
     private fun onSelectMeal(meal: Recipe) {
-        val quantity = meal.food.quantity
+        val quantity = if (meal.food.isRecipe) 1.0
+        else meal.food.quantity
 
         _state.update {
             it.copy(
@@ -113,11 +114,11 @@ class CountViewModel @Inject constructor(
      * Get a counted meal from a recipe
      *
      * @param recipe The recipe to calculate the stats from
-     * @param quantity The quantity to multiply the food by
+     * @param quantity The quantity to multiply the meal by
      */
     private fun getCountedMealOfRecipe(recipe: Recipe, quantity: Double): CountedMealEntity {
         if (recipe.food.isRecipe) {
-            return CalorieCalculator.calculateCountedRecipe(recipe)
+            return CalorieCalculator.calculateCountedRecipe(recipe, quantity)
         }
 
         return CalorieCalculator.calculateCountedFood(recipe.food, quantity)

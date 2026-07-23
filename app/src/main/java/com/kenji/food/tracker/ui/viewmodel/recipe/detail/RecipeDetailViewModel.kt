@@ -27,8 +27,8 @@ class RecipeDetailViewModel @AssistedInject constructor(
 
     init {
         viewModelScope.launch {
-            foodDao.getRecipeById(id).collect { food ->
-                _state.update { it.copy(recipe = food) }
+            foodDao.getRecipeById(id).collect { recipe ->
+                _state.update { it.copy(recipe = recipe) }
             }
         }
     }

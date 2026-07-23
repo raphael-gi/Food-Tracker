@@ -37,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.result.ResultEffect
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -45,11 +46,12 @@ import com.kenji.food.tracker.R
 import com.kenji.food.tracker.entity.FoodEntity
 import com.kenji.food.tracker.entity.FoodUnit
 import com.kenji.food.tracker.entity.RecipeFoodEntity
+import com.kenji.food.tracker.ui.component.FoodSelectorButtons
 import com.kenji.food.tracker.ui.component.FullScreenLoading
 import com.kenji.food.tracker.ui.component.TopBar
 import com.kenji.food.tracker.ui.component.button.ActionButton
-import com.kenji.food.tracker.ui.component.button.SelectionButton
 import com.kenji.food.tracker.ui.component.cell.FoodCell
+import com.kenji.food.tracker.ui.component.info.NoData
 import com.kenji.food.tracker.ui.component.input.FormNumberField
 import com.kenji.food.tracker.ui.component.input.FormTextField
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
@@ -59,14 +61,24 @@ import com.kenji.food.tracker.ui.viewmodel.recipe.add.UpsertRecipeViewModel
 import kotlinx.coroutines.flow.flowOf
 
 @Composable
-fun UpsertRecipeScreen(viewModel: UpsertRecipeViewModel, onNavBack: () -> Unit) {
+fun UpsertRecipeScreen(
+    viewModel: UpsertRecipeViewModel,
+    onLaunchCamera: () -> Unit,
+    onNavBack: () -> Unit
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val foods = viewModel.foods.collectAsLazyPagingItems()
+
+    ResultEffect<String> { code ->
+        viewModel.onAction(UpsertRecipeAction.CodeScanned(code))
+    }
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
                 UpsertRecipeEffect.NavBack -> onNavBack()
+                UpsertRecipeEffect.LaunchCamera -> onLaunchCamera()
+                UpsertRecipeEffect.ScanNotFound -> {}
             }
         }
     }
@@ -86,8 +98,9 @@ fun UpsertRecipeScreen(viewModel: UpsertRecipeViewModel, onNavBack: () -> Unit) 
         ) { innerPadding ->
             UpsertRecipe(
                 modifier = Modifier.padding(innerPadding),
-                name = state.name,
                 foods = foods,
+                name = state.name,
+                portions = state.portions,
                 isSelectionMode = state.isSelectMode,
                 selectedFoods = state.selectedFoods,
                 isCreate = state.isCreate,
@@ -103,6 +116,7 @@ private fun UpsertRecipe(
     modifier: Modifier = Modifier,
     foods: LazyPagingItems<FoodEntity>,
     name: String,
+    portions: Double?,
     isSelectionMode: Boolean,
     selectedFoods: Map<Int, RecipeFoodEntity>,
     isCreate: Boolean,
@@ -170,20 +184,30 @@ private fun UpsertRecipe(
                             value = recipeFood.recipeQuantity,
                             label = stringResource(R.string.quantityUnitLabel, recipeFood.food.unit)
                         ) { input ->
-                            onAction(UpsertRecipeAction.SetRecipeQuantity(recipeFood.food, input))
+                            onAction(
+                                UpsertRecipeAction.SetRecipeFoodQuantity(recipeFood.food, input)
+                            )
                         }
                     }
                 }
             }
         }
 
-        SelectionButton(text = R.string.selectFood) {
-            onAction(UpsertRecipeAction.ToggleSelectMode)
-        }
+        FoodSelectorButtons(
+            onClickSelectButton = { onAction(UpsertRecipeAction.ToggleSelectMode) },
+            onClickScanButton = { onAction(UpsertRecipeAction.LaunchCamera) }
+        )
 
         if (isSelectionMode) {
             FoodSelection(foods, selectedFoods, onAction)
         }
+
+        FormNumberField(
+            value = portions,
+            label = R.string.portions,
+            required = true,
+            onValueChange = { onAction(UpsertRecipeAction.SetPortions(it)) }
+        )
     }
 }
 
@@ -214,15 +238,23 @@ private fun FoodSelectionList(
     selectedFoods: Set<Int>,
     onToggleSelection: (FoodEntity) -> Unit
 ) {
-    LazyColumn {
-        items(count = items.itemCount, key = items.itemKey { it.id }) { index ->
-            val item = items[index]
-            if (item != null) {
-                FoodSelectionCell(item, selectedFoods) {
-                    onToggleSelection(item)
+    if (items.loadState.isIdle && items.itemCount == 0) {
+        NoData(
+            icon = R.drawable.food,
+            iconDescription = R.string.food,
+            text = R.string.noFoods
+        )
+    } else {
+        LazyColumn {
+            items(count = items.itemCount, key = items.itemKey { it.id }) { index ->
+                val item = items[index]
+                if (item != null) {
+                    FoodSelectionCell(item, selectedFoods) {
+                        onToggleSelection(item)
+                    }
+                } else {
+                    Text("Unavailable")
                 }
-            } else {
-                Text("Unavailable")
             }
         }
     }
@@ -266,6 +298,7 @@ private fun UpsertRecipePreview() {
             UpsertRecipe(
                 foods = items,
                 name = "",
+                portions = 1.0,
                 isSelectionMode = false,
                 selectedFoods = mapOf(
                     1 to RecipeFoodEntity(

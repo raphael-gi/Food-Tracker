@@ -63,7 +63,7 @@ fun UpsertFoodScreen(
         else -> Scaffold(
             topBar = { TopBar(title, onBackPressed = onNavBack) },
             floatingActionButton = {
-                ScanButton(onLaunchScanner)
+                ScanButton(onClick = onLaunchScanner)
             }
         ) { innerPadding ->
             UpsertFood(

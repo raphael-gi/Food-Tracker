@@ -121,6 +121,9 @@ fun AppNavigation() {
                         viewModel = hiltViewModel<UpsertRecipeViewModel, UpsertRecipeViewModel.Factory>(
                             creationCallback = { factory -> factory.create(key.id) }
                         ),
+                        onLaunchCamera = {
+                            backStack.add(Route.Scanner)
+                        },
                         onNavBack = {
                             backStack.removeLastOrNull()
                         }

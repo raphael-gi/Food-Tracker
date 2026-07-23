@@ -21,9 +21,7 @@ import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
 @Composable
 fun SelectionButton(modifier: Modifier = Modifier, @StringRes text: Int, onClick: () -> Unit) {
     Button(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 10.dp),
+        modifier = modifier.padding(horizontal = 10.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.secondary,
         ),
@@ -44,7 +42,10 @@ private fun SelectionButtonPreview() {
     FoodTrackerTheme {
         Surface {
             Box {
-                SelectionButton(text = R.string.selectFood) { }
+                SelectionButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = R.string.selectFood
+                ) { }
             }
         }
     }

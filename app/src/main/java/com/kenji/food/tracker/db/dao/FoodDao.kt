@@ -39,10 +39,10 @@ interface FoodDao {
     @Update
     suspend fun update(foodEntity: FoodEntity)
 
-    @Query("SELECT * FROM food WHERE id = :id")
+    @Query("SELECT * FROM food WHERE id = :id AND isRecipe = false")
     fun getFoodById(id: Int): Flow<FoodEntity>
 
-    @Query("SELECT * FROM food WHERE id = :id")
+    @Query("SELECT * FROM food WHERE id = :id AND isRecipe = true")
     fun getRecipeById(id: Int): Flow<Recipe>
 
     @Query("SELECT * FROM food WHERE code = :code")
@@ -60,8 +60,7 @@ interface FoodDao {
 
     @Query(
         """
-        SELECT *
-        FROM food
+        SELECT * FROM food
         WHERE food.isRecipe = false
         AND food.name LIKE :query
         ORDER BY food.lastUsed DESC, food.name"""
@@ -73,11 +72,11 @@ interface FoodDao {
         """
         SELECT * FROM food
         WHERE food.isRecipe = true
-        ORDER BY food.lastUsed
-        DESC, food.name
+        AND food.name LIKE :query
+        ORDER BY food.lastUsed DESC, food.name
         """
     )
-    fun getAllRecipes(): PagingSource<Int, Recipe>
+    fun getAllRecipes(query: String): PagingSource<Int, Recipe>
 
     @Query("DELETE FROM food WHERE food.id IN (:ids)")
     suspend fun delete(ids: Set<Int>)

@@ -100,7 +100,7 @@ private fun FoodList(
 ) {
     if (items.loadState.isIdle && items.itemCount == 0) {
         NoData(
-            icon = R.drawable.meal,
+            icon = R.drawable.food,
             iconDescription = R.string.food,
             text = R.string.noFoods
         )

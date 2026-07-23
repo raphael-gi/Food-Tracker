@@ -54,6 +54,7 @@ class UpsertRecipeViewModel @AssistedInject constructor(
                     _state.update {
                         it.copy(
                             name = recipe.food.name,
+                            portions = recipe.food.quantity,
                             selectedFoods = recipe.foods.associateBy { food -> food.foodId },
                             isLoading = false
                         )
@@ -67,11 +68,15 @@ class UpsertRecipeViewModel @AssistedInject constructor(
         when (action) {
             is UpsertRecipeAction.SetName -> this.onSetName(action.name)
             UpsertRecipeAction.ToggleSelectMode -> this.onToggleSelectMode()
+            UpsertRecipeAction.LaunchCamera -> this.onLaunchCamera()
+            is UpsertRecipeAction.CodeScanned -> this.onCodeScanned(action.code)
             is UpsertRecipeAction.ToggleSelection -> this.onToggleSelection(action.food)
-            is UpsertRecipeAction.SetRecipeQuantity -> this.onSetRecipeQuantity(
+            is UpsertRecipeAction.SetRecipeFoodQuantity -> this.onSetRecipeQuantity(
                 action.food,
                 action.input
             )
+
+            is UpsertRecipeAction.SetPortions -> this.onSetPortions(action.input)
 
             UpsertRecipeAction.Create -> this.onCreate()
         }
@@ -83,6 +88,33 @@ class UpsertRecipeViewModel @AssistedInject constructor(
 
     private fun onToggleSelectMode() {
         _state.update { it.copy(isSelectMode = !it.isSelectMode) }
+    }
+
+    private fun onLaunchCamera() {
+        viewModelScope.launch {
+            _effect.send(UpsertRecipeEffect.LaunchCamera)
+        }
+    }
+
+    private fun onCodeScanned(code: String) {
+        viewModelScope.launch {
+            val scannedFood = foodDao.getFoodByCode(code)
+
+            when (scannedFood.size) {
+                0 -> _effect.send(UpsertRecipeEffect.ScanNotFound)
+                1 -> {
+                    val food = scannedFood.first()
+
+                    if (state.value.selectedFoods.contains(food.id)) {
+                        return@launch
+                    }
+
+                    onToggleSelection(food)
+                }
+
+                else -> {}
+            }
+        }
     }
 
     private fun onToggleSelection(food: FoodEntity) {
@@ -123,17 +155,23 @@ class UpsertRecipeViewModel @AssistedInject constructor(
         }
     }
 
+    private fun onSetPortions(input: String) {
+        val portions = input.toDoubleOrNull()
+        _state.update { it.copy(portions = portions) }
+    }
+
     private fun onCreate() {
-        val name = state.value.name
+        val name = state.value.name.ifEmpty { return }
+        val portion = state.value.portions ?: return
 
         val entity = FoodEntity(
             id = id ?: 0,
             name = name,
             calories = null,
             protein = null,
-            quantity = 1.0,
+            quantity = portion,
             isRecipe = true,
-            unit = FoodUnit.G,
+            unit = FoodUnit.PC,
         )
 
         val recipe = Recipe(

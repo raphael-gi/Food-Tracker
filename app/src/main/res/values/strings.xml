@@ -67,4 +67,6 @@
 
     <string name="check">Check</string>
     <string name="barcodeScanning">Barcode scanning</string>
+
+    <string name="portions">Portions</string>
 </resources>

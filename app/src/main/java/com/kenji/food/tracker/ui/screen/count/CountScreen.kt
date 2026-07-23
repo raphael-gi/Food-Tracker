@@ -36,12 +36,12 @@ import com.kenji.food.tracker.entity.CountedMealEntity
 import com.kenji.food.tracker.entity.FoodEntity
 import com.kenji.food.tracker.entity.FoodUnit
 import com.kenji.food.tracker.entity.Recipe
+import com.kenji.food.tracker.ui.component.FoodSelectorButtons
 import com.kenji.food.tracker.ui.component.TopBar
 import com.kenji.food.tracker.ui.component.button.ActionButton
-import com.kenji.food.tracker.ui.component.button.ScanButton
-import com.kenji.food.tracker.ui.component.button.SelectionButton
 import com.kenji.food.tracker.ui.component.cell.FoodCell
 import com.kenji.food.tracker.ui.component.cell.RecipeCell
+import com.kenji.food.tracker.ui.component.info.NoData
 import com.kenji.food.tracker.ui.component.input.FormNumberField
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
 import com.kenji.food.tracker.ui.viewmodel.count.CountAction
@@ -120,13 +120,10 @@ fun CountContent(
             }
         }
 
-        SelectionButton(text = R.string.selectFood) {
-            onAction(CountAction.ToggleSelectMode)
-        }
-
-        ScanButton {
-            onAction(CountAction.LaunchCamera)
-        }
+        FoodSelectorButtons(
+            onClickSelectButton = { onAction(CountAction.ToggleSelectMode) },
+            onClickScanButton = { onAction(CountAction.LaunchCamera) }
+        )
 
         if (isSelectMode) {
             ModalBottomSheet(
@@ -178,30 +175,36 @@ private fun FoodCard(
             )
         }
 
-        if (!recipe.food.isRecipe) {
-            FormNumberField(
-                value = quantity,
-                label = stringResource(
-                    R.string.quantityUnitLabel,
-                    recipe.food.unit.toString().lowercase()
-                ),
-                onValueChange = onSetQuantity
-            )
-        }
+        FormNumberField(
+            value = quantity,
+            label = stringResource(
+                R.string.quantityUnitLabel,
+                recipe.food.unit.toString().lowercase()
+            ),
+            onValueChange = onSetQuantity
+        )
     }
 }
 
 @Composable
 private fun SelectionList(items: LazyPagingItems<Recipe>, onSelect: (Recipe) -> Unit) {
-    LazyColumn {
-        items(count = items.itemCount, key = items.itemKey { it.food.id }) { index ->
-            val item = items[index]
-            if (item != null) {
-                FoodSelectionCell(item) {
-                    onSelect(item)
+    if (items.loadState.isIdle && items.itemCount == 0) {
+        NoData(
+            icon = R.drawable.food,
+            iconDescription = R.string.food,
+            text = R.string.noFoods
+        )
+    } else {
+        LazyColumn {
+            items(count = items.itemCount, key = items.itemKey { it.food.id }) { index ->
+                val item = items[index]
+                if (item != null) {
+                    FoodSelectionCell(item) {
+                        onSelect(item)
+                    }
+                } else {
+                    Text("Unavailable")
                 }
-            } else {
-                Text("Unavailable")
             }
         }
     }
