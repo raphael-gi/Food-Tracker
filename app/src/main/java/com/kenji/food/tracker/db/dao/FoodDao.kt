@@ -42,6 +42,7 @@ interface FoodDao {
     @Query("SELECT * FROM food WHERE id = :id AND isRecipe = false")
     fun getFoodById(id: Int): Flow<FoodEntity>
 
+    @Transaction
     @Query("SELECT * FROM food WHERE id = :id AND isRecipe = true")
     fun getRecipeById(id: Int): Flow<Recipe>
 
