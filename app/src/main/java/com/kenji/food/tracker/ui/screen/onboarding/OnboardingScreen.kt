@@ -5,7 +5,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,8 +18,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -107,37 +108,23 @@ private fun CalorieInput(calorieTarget: Int?, onAction: (OnboardingAction) -> Un
                 .padding(innerPadding)
                 .padding(10.dp)
                 .fillMaxSize(),
+            verticalArrangement = Arrangement.Center
         ) {
-            Column {
+            Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
                 Text(
-                    text = stringResource(R.string.welcome),
-                    style = MaterialTheme.typography.headlineLarge
-                )
-
-                Text(
-                    text = stringResource(R.string.slogan),
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(R.string.caloricTargetQuestion),
+                    textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.headlineMedium
                 )
-            }
 
-            Column(
-                modifier = Modifier.fillMaxHeight(),
-                verticalArrangement = Arrangement.Center
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text(
-                        text = stringResource(R.string.caloricTargetQuestion),
-                        style = MaterialTheme.typography.headlineMedium
-                    )
-
-                    FormNumberField(
-                        value = calorieTarget,
-                        label = R.string.calorieTargetLabel,
-                        iconRes = R.drawable.calories,
-                        onPressDone = { onAction(OnboardingAction.ConfirmCalories) },
-                        onValueChange = { onAction(OnboardingAction.SetCalorieTarget(it)) }
-                    )
-                }
+                FormNumberField(
+                    value = calorieTarget,
+                    label = R.string.calorieTargetLabel,
+                    iconRes = R.drawable.calories,
+                    onPressDone = { onAction(OnboardingAction.ConfirmCalories) },
+                    onValueChange = { onAction(OnboardingAction.SetCalorieTarget(it)) }
+                )
             }
         }
     }
@@ -169,19 +156,25 @@ private fun ScanPermission(onAction: (OnboardingAction) -> Unit) {
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxHeight(),
+                .fillMaxSize(),
             verticalArrangement = Arrangement.Center
         ) {
-            Column {
-                Text(
-                    text = stringResource(R.string.stopWastingTime),
-                    style = MaterialTheme.typography.headlineLarge
-                )
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                Column {
+                    Text(
+                        text = stringResource(R.string.stopWastingTime),
+                        style = MaterialTheme.typography.headlineLarge
+                    )
 
-                Text(
-                    text = stringResource(R.string.onboardingScanning),
-                    style = MaterialTheme.typography.headlineSmall
-                )
+                    Text(
+                        text = stringResource(R.string.onboardingScanning),
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                }
             }
         }
     }
@@ -194,7 +187,7 @@ private fun OnboardingScreenPreview() {
     FoodTrackerTheme {
         Surface {
             OnboardingContent(
-                currentScreen = OnboardingStep.CALORIE_INPUT,
+                currentScreen = OnboardingStep.SCAN_PERMISSION,
                 calorieTarget = 5,
                 onAction = {}
             )

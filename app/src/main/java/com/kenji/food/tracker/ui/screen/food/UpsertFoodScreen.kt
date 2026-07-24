@@ -152,6 +152,7 @@ private fun UpsertFood(
         FormNumberField(
             value = sugar,
             label = R.string.sugar,
+            iconRes = R.drawable.sugar,
             onValueChange = { onAction(UpsertFoodAction.SetSugar(it)) }
         )
 

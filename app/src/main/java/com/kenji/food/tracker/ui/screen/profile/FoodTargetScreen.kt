@@ -12,8 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kenji.food.tracker.R
-import com.kenji.food.tracker.ui.component.button.ActionButton
 import com.kenji.food.tracker.ui.component.TopBar
+import com.kenji.food.tracker.ui.component.button.ActionButton
 import com.kenji.food.tracker.ui.component.input.FormNumberField
 import com.kenji.food.tracker.ui.viewmodel.food.target.FoodTargetAction
 import com.kenji.food.tracker.ui.viewmodel.food.target.FoodTargetEffect
@@ -70,15 +70,17 @@ fun FoodTargetContent(
         FormNumberField(
             value = calories,
             label = R.string.caloriesLabel,
-            iconRes = R.drawable.calories
-        ) {
-            onAction(FoodTargetAction.SetCalories(it))
-        }
+            iconRes = R.drawable.calories,
+            onValueChange = { onAction(FoodTargetAction.SetCalories(it)) }
+        )
         FormNumberField(value = proteins, label = R.string.proteinLabel) {
             onAction(FoodTargetAction.SetProteins(it))
         }
-        FormNumberField(value = sugar, label = R.string.sugarLabel) {
-            onAction(FoodTargetAction.SetSugar(it))
-        }
+        FormNumberField(
+            value = sugar,
+            label = R.string.sugarLabel,
+            iconRes = R.drawable.sugar,
+            onValueChange = { onAction(FoodTargetAction.SetSugar(it)) }
+        )
     }
 }
