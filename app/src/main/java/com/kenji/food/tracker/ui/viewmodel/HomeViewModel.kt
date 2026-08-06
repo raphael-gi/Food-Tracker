@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kenji.food.tracker.db.dao.CountedMealDao
 import com.kenji.food.tracker.db.dao.ProfileDao
-import com.kenji.food.tracker.entity.CaloriesPerDay
+import com.kenji.food.tracker.entity.FoodPerDay
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,16 +35,16 @@ class HomeViewModel @Inject constructor(
             }
 
             launch {
-                countedMealDao.getCaloriesPerDayThisWeek().collect { caloriesPerDay ->
-                    val calories = caloriesPerDay.toMutableList()
+                countedMealDao.getCaloriesPerDayThisWeek().collect { foodPerDay ->
+                    val food = foodPerDay.toMutableList()
                     for (i in 0..6) {
-                        if (calories.getOrNull(i)?.day != i) {
-                            calories.add(i, CaloriesPerDay(i, 0))
+                        if (food.getOrNull(i)?.day != i) {
+                            food.add(i, FoodPerDay(i, 0, 0, 0))
                         }
                     }
 
                     _state.update {
-                        it.copy(caloriesPerDay = calories)
+                        it.copy(foodPerDays = food)
                     }
                 }
             }

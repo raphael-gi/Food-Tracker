@@ -5,9 +5,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ShapeDefaults
@@ -22,10 +23,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kenji.food.tracker.R
-import com.kenji.food.tracker.entity.CaloriesPerDay
+import com.kenji.food.tracker.entity.FoodPerDay
 import com.kenji.food.tracker.entity.FoodTargetEntity
 import com.kenji.food.tracker.ui.Route
-import com.kenji.food.tracker.ui.component.chart.WeekOverview
+import com.kenji.food.tracker.ui.component.chart.WeekOverviewChart
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
 import com.kenji.food.tracker.ui.viewmodel.HomeViewModel
 
@@ -36,7 +37,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel(), onNavigate: (Route) -
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     HomeContent(
-        caloriesPerDay = state.caloriesPerDay,
+        foodPerDay = state.foodPerDays,
         currentTarget = state.currentTarget,
         onNavigate = onNavigate
     )
@@ -44,7 +45,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel(), onNavigate: (Route) -
 
 @Composable
 private fun HomeContent(
-    caloriesPerDay: List<CaloriesPerDay>,
+    foodPerDay: List<FoodPerDay>,
     currentTarget: FoodTargetEntity?,
     onNavigate: (Route) -> Unit
 ) {
@@ -54,21 +55,34 @@ private fun HomeContent(
             .padding(SPACING),
         verticalArrangement = Arrangement.spacedBy(SPACING)
     ) {
-        HomeTile(
-            modifier = Modifier.height(100.dp),
-            onClick = { onNavigate(Route.Count) }
-        ) {
-            Text(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .wrapContentSize(),
-                text = stringResource(R.string.countMeal)
-            )
-        }
-
-        HomeTile(modifier = Modifier.weight(2.5f), onClick = {}) {
+        HomeTile(modifier = Modifier.weight(2.5f)) {
             currentTarget?.let { target ->
-                WeekOverview(caloriesPerDay, target)
+                val items = buildList {
+                    add(@Composable {
+                        WeekOverviewChart(foodPerDay, FoodPerDay::calories, target.calories, 200)
+                    })
+                    if (target.protein != null) {
+                        add(@Composable {
+                            WeekOverviewChart(foodPerDay, FoodPerDay::protein, target.protein, 20)
+                        })
+                    }
+                    if (target.sugar != null) {
+                        add(@Composable {
+                            WeekOverviewChart(foodPerDay, FoodPerDay::sugar, target.sugar, 10)
+                        })
+                    }
+                }
+
+                val pagerState = rememberPagerState { items.size }
+
+                HorizontalPager(
+                    modifier = Modifier.fillMaxSize(),
+                    pageSpacing = SPACING,
+                    state = pagerState
+                ) { pageIndex ->
+                    items[pageIndex]()
+                }
+
             }
         }
 
@@ -101,11 +115,12 @@ private fun HomeContent(
 @Composable
 private fun HomeTile(
     modifier: Modifier = Modifier,
-    onClick: () -> Unit,
+    onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
-        onClick = onClick,
+        onClick = onClick ?: {},
+        enabled = onClick != null,
         modifier = modifier.fillMaxWidth(),
         elevation = CardDefaults.elevatedCardElevation(),
         shape = ShapeDefaults.Small,
@@ -126,7 +141,7 @@ private fun HomeScreenPreview() {
 
     FoodTrackerTheme {
         Surface {
-            HomeContent(caloriesPerDay = emptyList(), currentTarget = target) { }
+            HomeContent(foodPerDay = emptyList(), currentTarget = target) { }
         }
     }
 }
