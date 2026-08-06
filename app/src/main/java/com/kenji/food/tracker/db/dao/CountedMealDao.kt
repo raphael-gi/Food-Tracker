@@ -5,8 +5,8 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
-import com.kenji.food.tracker.entity.CaloriesPerDay
 import com.kenji.food.tracker.entity.CountedMealEntity
+import com.kenji.food.tracker.entity.FoodPerDay
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -37,12 +37,12 @@ interface CountedMealDao {
 
     @Query(
         """
-        SELECT (CAST(strftime('%w', DATE(eatenAt / 1000, 'unixepoch')) AS INTEGER) + 6) % 7 AS day, SUM(calories) AS calories
+        SELECT (CAST(strftime('%w', DATE(eatenAt / 1000, 'unixepoch')) AS INTEGER) + 6) % 7 AS day, SUM(calories) AS calories, SUM(protein) AS protein, SUM(sugar) as sugar
         FROM counted_meal
         WHERE DATE(eatenAt / 1000, 'unixepoch') > DATE(strftime('%s', 'now', '-7 days'), 'unixepoch')
         AND (CAST(strftime('%w', DATE(eatenAt / 1000, 'unixepoch')) AS INTEGER) + 6) % 7 <= (CAST(strftime('%w', DATE(strftime('%s', 'now', '-7 days'), 'unixepoch')) AS INTEGER) + 6) % 7
         GROUP BY strftime("%w", DATE(eatenAt / 1000, 'unixepoch'))
     """
     )
-    fun getCaloriesPerDayThisWeek(): Flow<List<CaloriesPerDay>>
+    fun getCaloriesPerDayThisWeek(): Flow<List<FoodPerDay>>
 }

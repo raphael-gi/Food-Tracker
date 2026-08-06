@@ -14,7 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kenji.food.tracker.R
-import com.kenji.food.tracker.entity.CaloriesPerDay
+import com.kenji.food.tracker.entity.FoodPerDay
 import com.kenji.food.tracker.entity.FoodTargetEntity
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
@@ -34,16 +34,21 @@ import com.patrykandpatrick.vico.compose.common.component.rememberLineComponent
 import com.patrykandpatrick.vico.compose.common.data.ExtraStore
 
 @Composable
-fun WeekOverview(caloriesPerDay: List<CaloriesPerDay>, currentTarget: FoodTargetEntity) {
+fun WeekOverviewChart(
+    foodPerDay: List<FoodPerDay>,
+    getKey: (FoodPerDay) -> Int,
+    currentTarget: Int,
+    valuePadding: Int
+) {
     val modelProducer = remember { CartesianChartModelProducer() }
 
-    LaunchedEffect(caloriesPerDay) {
+    LaunchedEffect(foodPerDay) {
         modelProducer.runTransaction {
-            columnModel { series(caloriesPerDay.map(CaloriesPerDay::calories)) }
+            columnModel { series(foodPerDay.map(getKey)) }
         }
     }
 
-    val labels = caloriesPerDay.map { perDay ->
+    val labels = foodPerDay.map { perDay ->
         val dayRes = getShortDayOfWeek(perDay.day)
         if (dayRes != null) stringResource(dayRes)
         else ""
@@ -81,9 +86,9 @@ fun WeekOverview(caloriesPerDay: List<CaloriesPerDay>, currentTarget: FoodTarget
                     CartesianLayerRangeProvider.fixed(
                         minY = 0.0,
                         maxY = maxOf(
-                            currentTarget.calories.toDouble(),
-                            *caloriesPerDay.map { it.calories.toDouble() }.toTypedArray()
-                        ) + 200.0
+                            currentTarget.toDouble(),
+                            *foodPerDay.map { getKey(it).toDouble() }.toTypedArray()
+                        ) + valuePadding
                     )
                 }
             ),
@@ -95,7 +100,7 @@ fun WeekOverview(caloriesPerDay: List<CaloriesPerDay>, currentTarget: FoodTarget
             ),
             decorations = listOf(
                 HorizontalLine(
-                    y = { currentTarget.calories.toDouble() },
+                    y = { currentTarget.toDouble() },
                     line = rememberLineComponent(
                         fill = Fill(MaterialTheme.colorScheme.secondary),
                         thickness = 2.dp
@@ -124,7 +129,7 @@ private fun getShortDayOfWeek(day: Int): Int? {
 
 @Preview(heightDp = 400)
 @Composable
-private fun WeekOverviewPreview() {
+private fun WeekOverviewChartPreview() {
     val target = FoodTargetEntity(
         id = 0,
         calories = 2000,
@@ -134,7 +139,7 @@ private fun WeekOverviewPreview() {
 
     FoodTrackerTheme {
         Surface {
-            WeekOverview(emptyList(), target)
+            // WeekOverviewChart(emptyList(), target)
         }
     }
 }
