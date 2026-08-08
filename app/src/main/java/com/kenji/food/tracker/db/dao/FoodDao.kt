@@ -53,11 +53,12 @@ interface FoodDao {
     @Query(
         """
         SELECT * FROM food
+        WHERE food.name LIKE :query
         ORDER BY food.lastUsed DESC,
         food.name
         """
     )
-    fun getAll(): PagingSource<Int, Recipe>
+    fun getAll(query: String): PagingSource<Int, Recipe>
 
     @Query(
         """

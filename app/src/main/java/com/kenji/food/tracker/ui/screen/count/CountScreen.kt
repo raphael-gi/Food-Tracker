@@ -43,6 +43,7 @@ import com.kenji.food.tracker.ui.component.cell.FoodCell
 import com.kenji.food.tracker.ui.component.cell.RecipeCell
 import com.kenji.food.tracker.ui.component.info.NoData
 import com.kenji.food.tracker.ui.component.input.FormNumberField
+import com.kenji.food.tracker.ui.component.input.SearchField
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
 import com.kenji.food.tracker.ui.viewmodel.count.CountAction
 import com.kenji.food.tracker.ui.viewmodel.count.CountEffect
@@ -88,6 +89,7 @@ fun CountScreen(
             countedMeal = state.countedMeal,
             quantity = state.quantity,
             isSelectMode = state.isSelectMode,
+            query = state.query,
             onAction = viewModel::onAction
         )
     }
@@ -102,6 +104,7 @@ fun CountContent(
     countedMeal: CountedMealEntity?,
     quantity: Double?,
     isSelectMode: Boolean,
+    query: String,
     onAction: (CountAction) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -131,9 +134,7 @@ fun CountContent(
                 sheetState = sheetState
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
-                    SelectionList(foods) {
-                        onAction(CountAction.SelectMeal(it))
-                    }
+                    SelectionList(foods, query, onAction)
                 }
             }
         }
@@ -187,7 +188,11 @@ private fun FoodCard(
 }
 
 @Composable
-private fun SelectionList(items: LazyPagingItems<Recipe>, onSelect: (Recipe) -> Unit) {
+private fun SelectionList(
+    items: LazyPagingItems<Recipe>,
+    query: String,
+    onAction: (CountAction) -> Unit
+) {
     if (items.loadState.isIdle && items.itemCount == 0) {
         NoData(
             icon = R.drawable.food,
@@ -196,11 +201,16 @@ private fun SelectionList(items: LazyPagingItems<Recipe>, onSelect: (Recipe) -> 
         )
     } else {
         LazyColumn {
+            stickyHeader {
+                SearchField(query = query) {
+                    onAction(CountAction.Search(it))
+                }
+            }
             items(count = items.itemCount, key = items.itemKey { it.food.id }) { index ->
                 val item = items[index]
                 if (item != null) {
                     FoodSelectionCell(item) {
-                        onSelect(item)
+                        onAction(CountAction.SelectMeal(item))
                     }
                 } else {
                     Text("Unavailable")
@@ -260,7 +270,8 @@ private fun CountContentPreview() {
                     calories = 5,
                 ),
                 quantity = 5.0,
-                isSelectMode = false
+                isSelectMode = false,
+                query = ""
             ) { }
         }
     }
