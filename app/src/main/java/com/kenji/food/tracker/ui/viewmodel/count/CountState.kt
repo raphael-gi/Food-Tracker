@@ -8,6 +8,7 @@ data class CountState(
     val selectedMeal: Recipe? = null,
     val countedMeal: CountedMealEntity? = null,
     val quantity: Double? = null,
+    val query: String = ""
 )
 
 sealed interface CountAction {
@@ -15,6 +16,7 @@ sealed interface CountAction {
     data class CodeScanned(val code: String) : CountAction
     data object ToggleSelectMode : CountAction
     data class SelectMeal(val meal: Recipe) : CountAction
+    data class Search(val query: String) : CountAction
     data class SetMealQuantity(val input: String) : CountAction
     data object CountMeal : CountAction
 }

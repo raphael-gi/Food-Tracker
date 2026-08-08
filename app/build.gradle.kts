@@ -15,6 +15,14 @@ android {
         }
     }
 
+    flavorDimensions += "environment"
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.kenji.food.tracker"
         minSdk = 33

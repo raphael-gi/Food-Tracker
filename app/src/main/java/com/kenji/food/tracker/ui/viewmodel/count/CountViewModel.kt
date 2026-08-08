@@ -11,15 +11,20 @@ import com.kenji.food.tracker.entity.CountedMealEntity
 import com.kenji.food.tracker.entity.Recipe
 import com.kenji.food.tracker.util.CalorieCalculator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
+@OptIn(ExperimentalCoroutinesApi::class)
 class CountViewModel @Inject constructor(
     private val foodDao: FoodDao,
     private val countedMealDao: CountedMealDao,
@@ -30,10 +35,15 @@ class CountViewModel @Inject constructor(
     private val _effect = Channel<CountEffect>()
     val effect = _effect.receiveAsFlow()
 
-    val meals = Pager(
-        config = PagingConfig(pageSize = 5),
-        pagingSourceFactory = { foodDao.getAll() }
-    ).flow.cachedIn(viewModelScope)
+    val meals = state
+        .map { it.query }
+        .distinctUntilChanged()
+        .flatMapLatest { query ->
+            Pager(
+                config = PagingConfig(pageSize = 5),
+                pagingSourceFactory = { foodDao.getAll("%${query}%") }
+            ).flow
+        }.cachedIn(viewModelScope)
 
     fun onAction(action: CountAction) {
         when (action) {
@@ -41,6 +51,7 @@ class CountViewModel @Inject constructor(
             is CountAction.CodeScanned -> this.onCodeScanned(action.code)
             CountAction.ToggleSelectMode -> this.onToggleSelectMode()
             is CountAction.SelectMeal -> this.onSelectMeal(action.meal)
+            is CountAction.Search -> this.onSearch(action.query)
             is CountAction.SetMealQuantity -> this.onSetMealQuantity(action.input)
             CountAction.CountMeal -> this.onCountMeal()
         }
@@ -86,6 +97,10 @@ class CountViewModel @Inject constructor(
                 isSelectMode = false
             )
         }
+    }
+
+    private fun onSearch(query: String) {
+        _state.update { it.copy(query = query) }
     }
 
     private fun onSetMealQuantity(input: String) {
