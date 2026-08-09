@@ -28,10 +28,10 @@ jobs:
         run: |
           echo "$KEYSTORE_BASE64" | base64 -d > "$KEYSTORE_FILE"
           chmod +x gradlew
-          ./gradlew assembleRelease
+          ./gradlew assembleProdRelease
 
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ github.run_number }}
-          files: app/build/outputs/apk/release/app-release.apk
+          files: app/build/outputs/apk/release/app-prod-release.apk
 
