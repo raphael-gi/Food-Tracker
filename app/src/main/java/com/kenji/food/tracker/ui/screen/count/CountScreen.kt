@@ -193,27 +193,27 @@ private fun SelectionList(
     query: String,
     onAction: (CountAction) -> Unit
 ) {
-    if (items.loadState.isIdle && items.itemCount == 0) {
-        NoData(
-            icon = R.drawable.food,
-            iconDescription = R.string.food,
-            text = R.string.noFoods
-        )
-    } else {
-        LazyColumn {
-            stickyHeader {
-                SearchField(query = query) {
-                    onAction(CountAction.Search(it))
-                }
-            }
-            items(count = items.itemCount, key = items.itemKey { it.food.id }) { index ->
-                val item = items[index]
-                if (item != null) {
-                    FoodSelectionCell(item) {
-                        onAction(CountAction.SelectMeal(item))
+    Column {
+        SearchField(query = query) {
+            onAction(CountAction.Search(it))
+        }
+        if (items.loadState.isIdle && items.itemCount == 0) {
+            NoData(
+                icon = R.drawable.food,
+                iconDescription = R.string.food,
+                text = R.string.noFoods
+            )
+        } else {
+            LazyColumn {
+                items(count = items.itemCount, key = items.itemKey { it.food.id }) { index ->
+                    val item = items[index]
+                    if (item != null) {
+                        FoodSelectionCell(item) {
+                            onAction(CountAction.SelectMeal(item))
+                        }
+                    } else {
+                        Text("Unavailable")
                     }
-                } else {
-                    Text("Unavailable")
                 }
             }
         }
