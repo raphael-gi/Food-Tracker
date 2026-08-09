@@ -33,5 +33,5 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ github.run_number }}
-          files: app/build/outputs/apk/release/app-prod-release.apk
+          files: app/prod/release/app-prod-release.apk
 
