@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
@@ -89,12 +87,6 @@ fun UpsertRecipeScreen(
         state.isLoading -> FullScreenLoading()
         else -> Scaffold(
             topBar = { TopBar(title, onBackPressed = onNavBack) },
-            floatingActionButtonPosition = FabPosition.Center,
-            floatingActionButton = {
-                ActionButton(text = title) {
-                    viewModel.onAction(UpsertRecipeAction.Create)
-                }
-            }
         ) { innerPadding ->
             UpsertRecipe(
                 modifier = Modifier.padding(innerPadding),
@@ -110,7 +102,6 @@ fun UpsertRecipeScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun UpsertRecipe(
     modifier: Modifier = Modifier,
@@ -130,84 +121,93 @@ private fun UpsertRecipe(
         }
     }
 
-    Column(
+    LazyColumn(
         modifier = modifier.padding(horizontal = 10.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        FormTextField(
-            modifier = Modifier.focusRequester(focusRequester),
-            value = name,
-            label = R.string.name
-        ) {
-            onAction(UpsertRecipeAction.SetName(it))
+        item {
+            FormTextField(
+                modifier = Modifier.focusRequester(focusRequester),
+                required = true,
+                value = name,
+                label = R.string.name
+            ) {
+                onAction(UpsertRecipeAction.SetName(it))
+            }
         }
 
-        LazyColumn {
-            items(items = selectedFoods.values.toList(), key = { it.foodId }) { recipeFood ->
-                val position = SwipeToDismissBoxDefaults.positionalThreshold
+        items(items = selectedFoods.values.toList(), key = { it.foodId }) { recipeFood ->
+            val position = SwipeToDismissBoxDefaults.positionalThreshold
 
-                val swipeToDismissState = remember(recipeFood.foodId) {
-                    SwipeToDismissBoxState(
-                        initialValue = SwipeToDismissBoxValue.Settled,
-                        positionalThreshold = position
+            val swipeToDismissState = remember(recipeFood.foodId) {
+                SwipeToDismissBoxState(
+                    initialValue = SwipeToDismissBoxValue.Settled,
+                    positionalThreshold = position
+                )
+            }
+
+            SwipeToDismissBox(
+                state = swipeToDismissState,
+                enableDismissFromEndToStart = false,
+                onDismiss = {
+                    onAction(UpsertRecipeAction.ToggleSelection(recipeFood.food))
+                },
+                backgroundContent = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.error)
                     )
                 }
-
-                SwipeToDismissBox(
-                    state = swipeToDismissState,
-                    enableDismissFromEndToStart = false,
-                    onDismiss = {
-                        onAction(UpsertRecipeAction.ToggleSelection(recipeFood.food))
-                    },
-                    backgroundContent = {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(MaterialTheme.colorScheme.error)
-                        )
-                    }
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight()
+                        .background(MaterialTheme.colorScheme.background)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight()
-                            .background(MaterialTheme.colorScheme.background)
-                    ) {
-                        FoodCell(
-                            modifier = Modifier.weight(1f),
-                            item = recipeFood.food
-                        )
+                    FoodCell(
+                        modifier = Modifier.weight(1f),
+                        item = recipeFood.food
+                    )
 
-                        FormNumberField(
-                            modifier = Modifier.weight(0.5f),
-                            value = recipeFood.recipeQuantity,
-                            label = stringResource(R.string.quantityUnitLabel, recipeFood.food.unit)
-                        ) { input ->
-                            onAction(
-                                UpsertRecipeAction.SetRecipeFoodQuantity(recipeFood.food, input)
-                            )
-                        }
+                    FormNumberField(
+                        modifier = Modifier.weight(0.5f),
+                        value = recipeFood.recipeQuantity,
+                        label = stringResource(R.string.quantityUnitLabel, recipeFood.food.unit)
+                    ) { input ->
+                        onAction(
+                            UpsertRecipeAction.SetRecipeFoodQuantity(recipeFood.food, input)
+                        )
                     }
                 }
             }
         }
 
-        FoodSelectorButtons(
-            onClickSelectButton = { onAction(UpsertRecipeAction.ToggleSelectMode) },
-            onClickScanButton = { onAction(UpsertRecipeAction.LaunchCamera) }
-        )
+        item {
+            FoodSelectorButtons(
+                onClickSelectButton = { onAction(UpsertRecipeAction.ToggleSelectMode) },
+                onClickScanButton = { onAction(UpsertRecipeAction.LaunchCamera) }
+            )
 
-        if (isSelectionMode) {
-            FoodSelection(foods, selectedFoods, onAction)
+            FormNumberField(
+                value = portions,
+                label = R.string.portions,
+                required = true,
+                onValueChange = { onAction(UpsertRecipeAction.SetPortions(it)) }
+            )
+
+            val title = if (isCreate) R.string.create else R.string.edit
+
+            ActionButton(text = title) {
+                onAction(UpsertRecipeAction.Create)
+            }
         }
+    }
 
-        FormNumberField(
-            value = portions,
-            label = R.string.portions,
-            required = true,
-            onValueChange = { onAction(UpsertRecipeAction.SetPortions(it)) }
-        )
+    if (isSelectionMode) {
+        FoodSelection(foods, selectedFoods, onAction)
     }
 }
 
