@@ -36,10 +36,12 @@
     <string name="calorieTargetLabel">Calorie Target (kcal)</string>
     <string name="proteinTargetLabel">Protein Target (g)</string>
     <string name="sugarTargetLabel">Sugar Target (g)</string>
+    <string name="fat">Fat</string>
     <string name="carbs">Carbs</string>
+    <string name="carbsLabel">Carbs %1sg</string>
     <string name="protein">Protein</string>
     <string name="proteinLabel">Protein (g)</string>
-    <string name="fat">Fat</string>
+    <string name="saturatedFat">Saturated Fat</string>
     <string name="sugar">Sugar</string>
     <string name="sugarLabel">Sugar (g)</string>
 

@@ -70,10 +70,11 @@ fun UpsertFoodScreen(
                 modifier = Modifier.padding(innerPadding),
                 name = state.name,
                 calories = state.calories,
-                carbs = state.carbs,
-                protein = state.proteins,
                 fats = state.fats,
+                saturatedFats = state.saturatedFats,
+                carbs = state.carbs,
                 sugar = state.sugar,
+                protein = state.proteins,
                 foodUnit = state.unit,
                 quantity = state.quantity,
                 code = state.code,
@@ -89,10 +90,11 @@ private fun UpsertFood(
     modifier: Modifier,
     name: String,
     calories: Int?,
-    carbs: Double?,
-    protein: Double?,
     fats: Double?,
+    saturatedFats: Double?,
+    carbs: Double?,
     sugar: Double?,
+    protein: Double?,
     foodUnit: FoodUnit?,
     quantity: Double?,
     code: String?,
@@ -131,9 +133,15 @@ private fun UpsertFood(
         )
 
         FormNumberField(
-            value = protein,
-            label = R.string.protein,
-            onValueChange = { onAction(UpsertFoodAction.SetProteins(it)) }
+            value = fats,
+            label = R.string.fat,
+            onValueChange = { onAction(UpsertFoodAction.SetFats(it)) }
+        )
+
+        FormNumberField(
+            value = saturatedFats,
+            label = R.string.saturatedFat,
+            onValueChange = { onAction(UpsertFoodAction.SetSaturatedFats(it)) }
         )
 
         FormNumberField(
@@ -144,16 +152,16 @@ private fun UpsertFood(
         )
 
         FormNumberField(
-            value = fats,
-            label = R.string.fat,
-            onValueChange = { onAction(UpsertFoodAction.SetFats(it)) }
-        )
-
-        FormNumberField(
             value = sugar,
             label = R.string.sugar,
             iconRes = R.drawable.sugar,
             onValueChange = { onAction(UpsertFoodAction.SetSugar(it)) }
+        )
+
+        FormNumberField(
+            value = protein,
+            label = R.string.protein,
+            onValueChange = { onAction(UpsertFoodAction.SetProteins(it)) }
         )
 
         Row {
@@ -197,6 +205,7 @@ private fun UpsertFoodPreview() {
             UpsertFood(
                 Modifier,
                 "",
+                null,
                 null,
                 null,
                 null,

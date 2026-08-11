@@ -48,6 +48,7 @@ import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
 import com.kenji.food.tracker.ui.viewmodel.count.CountAction
 import com.kenji.food.tracker.ui.viewmodel.count.CountEffect
 import com.kenji.food.tracker.ui.viewmodel.count.CountViewModel
+import com.kenji.food.tracker.util.Formatter
 import kotlinx.coroutines.flow.flowOf
 
 @Composable
@@ -162,16 +163,37 @@ private fun FoodCard(
             style = MaterialTheme.typography.labelLarge
         )
 
-        countedMeal.protein?.let { protein ->
+        countedMeal.fats?.let { fats ->
             Text(
-                text = "Protein: ${protein}g",
+                text = "Fats: ${Formatter.formatDecimal(fats)}g",
+                style = MaterialTheme.typography.labelLarge
+            )
+        }
+
+        countedMeal.saturatedFats?.let { saturatedFats ->
+            Text(
+                text = "Saturated Fats: ${Formatter.formatDecimal(saturatedFats)}g",
                 style = MaterialTheme.typography.labelLarge
             )
         }
 
         countedMeal.carbs?.let { carbs ->
             Text(
-                text = "Carbs: ${carbs}g",
+                text = "Carbs: ${Formatter.formatDecimal(carbs)}g",
+                style = MaterialTheme.typography.labelLarge
+            )
+        }
+
+        countedMeal.sugar?.let { sugar ->
+            Text(
+                text = stringResource(R.string.sugarLabel, Formatter.formatDecimal(sugar)),
+                style = MaterialTheme.typography.labelLarge
+            )
+        }
+
+        countedMeal.protein?.let { protein ->
+            Text(
+                text = "Protein: ${Formatter.formatDecimal(protein)}g",
                 style = MaterialTheme.typography.labelLarge
             )
         }
@@ -268,6 +290,8 @@ private fun CountContentPreview() {
                     id = 0,
                     name = "abc",
                     calories = 5,
+                    fats = 5.0,
+                    saturatedFats = 5.0
                 ),
                 quantity = 5.0,
                 isSelectMode = false,

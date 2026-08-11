@@ -49,6 +49,7 @@ class UpsertFoodViewModel @AssistedInject constructor(
                         carbs = food.carbs,
                         proteins = food.protein,
                         fats = food.fats,
+                        sugar = food.sugar,
                         unit = food.unit,
                         quantity = food.quantity,
                         isLoading = false
@@ -62,10 +63,11 @@ class UpsertFoodViewModel @AssistedInject constructor(
         when (action) {
             is UpsertFoodAction.SetName -> this.onSetName(action.name)
             is UpsertFoodAction.SetCalories -> this.onSetCalories(action.input)
-            is UpsertFoodAction.SetCarbs -> this.onSetCarbs(action.input)
-            is UpsertFoodAction.SetProteins -> this.onSetProtein(action.input)
             is UpsertFoodAction.SetFats -> this.onSetFats(action.input)
+            is UpsertFoodAction.SetSaturatedFats -> this.onSetSaturatedFats(action.input)
+            is UpsertFoodAction.SetCarbs -> this.onSetCarbs(action.input)
             is UpsertFoodAction.SetSugar -> this.onSetSugar(action.input)
+            is UpsertFoodAction.SetProteins -> this.onSetProtein(action.input)
             is UpsertFoodAction.SetFoodUnit -> this.onSetFoodUnit(action.input)
             is UpsertFoodAction.SetQuantity -> this.onSetQuantity(action.input)
             is UpsertFoodAction.SetCode -> this.onSetCode(action.code)
@@ -83,24 +85,29 @@ class UpsertFoodViewModel @AssistedInject constructor(
         _state.update { it.copy(calories = calories) }
     }
 
-    private fun onSetCarbs(input: String) {
-        val carbs = input.toDoubleOrNull()
-        _state.update { it.copy(carbs = carbs) }
-    }
-
-    private fun onSetProtein(input: String) {
-        val protein = input.toDoubleOrNull()
-        _state.update { it.copy(proteins = protein) }
-    }
-
     private fun onSetFats(input: String) {
         val fats = input.toDoubleOrNull()
         _state.update { it.copy(fats = fats) }
     }
 
+    private fun onSetSaturatedFats(input: String) {
+        val fats = input.toDoubleOrNull()
+        _state.update { it.copy(fats = fats) }
+    }
+
+    private fun onSetCarbs(input: String) {
+        val carbs = input.toDoubleOrNull()
+        _state.update { it.copy(carbs = carbs) }
+    }
+
     private fun onSetSugar(input: String) {
         val sugar = input.toDoubleOrNull()
         _state.update { it.copy(sugar = sugar) }
+    }
+
+    private fun onSetProtein(input: String) {
+        val protein = input.toDoubleOrNull()
+        _state.update { it.copy(proteins = protein) }
     }
 
     private fun onSetFoodUnit(input: FoodUnit) {
@@ -128,9 +135,10 @@ class UpsertFoodViewModel @AssistedInject constructor(
     private fun onCreate() {
         val name = state.value.name
         val calories = state.value.calories ?: return
+        val fats = state.value.fats
+        val saturatedFats = state.value.saturatedFats
         val carbs = state.value.carbs
         val proteins = state.value.proteins
-        val fats = state.value.fats
         val sugar = state.value.sugar
         val unit = state.value.unit ?: return
         val quantity = state.value.quantity ?: return
@@ -140,10 +148,11 @@ class UpsertFoodViewModel @AssistedInject constructor(
             name = name,
             id = id ?: 0,
             calories = calories,
-            carbs = carbs,
-            protein = proteins,
             fats = fats,
+            saturatedFats = saturatedFats,
+            carbs = carbs,
             sugar = sugar,
+            protein = proteins,
             isRecipe = false,
             unit = unit,
             code = code,

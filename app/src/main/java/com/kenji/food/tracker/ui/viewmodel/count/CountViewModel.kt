@@ -118,9 +118,10 @@ class CountViewModel @Inject constructor(
 
     private fun onCountMeal() {
         val countedMeal = state.value.countedMeal ?: return
+        val foodId = state.value.selectedMeal?.food?.id ?: return
 
         viewModelScope.launch {
-            countedMealDao.insert(countedMeal)
+            countedMealDao.insertAndUpdate(countedMeal, foodId)
             _effect.send(CountEffect.Finish)
         }
     }
