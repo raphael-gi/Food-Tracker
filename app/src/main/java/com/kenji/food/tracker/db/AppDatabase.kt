@@ -1,6 +1,7 @@
 package com.kenji.food.tracker.db
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -19,7 +20,10 @@ import com.kenji.food.tracker.entity.RecipeFoodEntity
         CountedMealEntity::class,
         FoodTargetEntity::class
     ],
-    version = 1,
+    version = 2,
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2)
+    ]
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun foodDao(): FoodDao

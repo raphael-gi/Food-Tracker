@@ -31,10 +31,11 @@ object CalorieCalculator {
             id = 0,
             name = food.name,
             calories = (food.calories?.times(multiplier))?.roundToInt(),
+            fats = getFoodProperty(food.fats, multiplier),
+            saturatedFats = getFoodProperty(food.saturatedFats, multiplier),
             carbs = getFoodProperty(food.carbs, multiplier),
             sugar = getFoodProperty(food.sugar, multiplier),
             protein = getFoodProperty(food.protein, multiplier),
-            fats = getFoodProperty(food.fats, multiplier),
         )
     }
 
@@ -43,10 +44,11 @@ object CalorieCalculator {
             id = 0,
             name = recipe.food.name,
             calories = 0,
+            fats = 0.0,
+            saturatedFats = 0.0,
             carbs = 0.0,
             sugar = 0.0,
             protein = 0.0,
-            fats = 0.0,
         )
 
         return recipe.foods.fold(initialValue) { acc, entity ->
@@ -56,12 +58,15 @@ object CalorieCalculator {
                 calories = acc.calories?.plus(
                     (entity.food.calories ?: 0).times(multiplier).roundToInt()
                 ),
+                fats = acc.fats?.plus(getFoodProperty(entity.food.fats, multiplier) ?: 0.0),
+                saturatedFats = acc.saturatedFats?.plus(
+                    getFoodProperty(entity.food.saturatedFats, multiplier) ?: 0.0
+                ),
                 carbs = acc.carbs?.plus(getFoodProperty(entity.food.carbs, multiplier) ?: 0.0),
                 sugar = acc.sugar?.plus(getFoodProperty(entity.food.sugar, multiplier) ?: 0.0),
                 protein = acc.protein?.plus(
                     getFoodProperty(entity.food.protein, multiplier) ?: 0.0
                 ),
-                fats = acc.fats?.plus(getFoodProperty(entity.food.fats, multiplier) ?: 0.0),
             )
         }
     }

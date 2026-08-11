@@ -8,11 +8,22 @@ import androidx.room.Transaction
 import com.kenji.food.tracker.entity.CountedMealEntity
 import com.kenji.food.tracker.entity.FoodPerDay
 import kotlinx.coroutines.flow.Flow
+import java.time.Instant
 
 @Dao
 interface CountedMealDao {
     @Insert
     suspend fun insert(countedMealEntity: CountedMealEntity): Long
+
+    @Query("UPDATE food SET lastUsed = :lastUsed WHERE id = :id")
+    suspend fun updateLastUsed(id: Int, lastUsed: Long = Instant.now().toEpochMilli())
+
+    @Transaction
+    suspend fun insertAndUpdate(countedMealEntity: CountedMealEntity, foodId: Int) {
+        insert(countedMealEntity)
+
+        updateLastUsed(foodId)
+    }
 
     @Transaction
     @Query(
