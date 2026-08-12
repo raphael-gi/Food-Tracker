@@ -200,7 +200,7 @@ private fun UpsertRecipe(
 
             val title = if (isCreate) R.string.create else R.string.edit
 
-            ActionButton(text = title) {
+            ActionButton(modifier = Modifier.padding(vertical = 10.dp), text = title) {
                 onAction(UpsertRecipeAction.Create)
             }
         }
