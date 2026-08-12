@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -59,16 +60,34 @@ private fun HomeContent(
             currentTarget?.let { target ->
                 val items = buildList {
                     add(@Composable {
-                        WeekOverviewChart(foodPerDay, FoodPerDay::calories, target.calories, 200)
+                        WeekOverviewChart(
+                            foodPerDay = foodPerDay,
+                            getKey = FoodPerDay::calories,
+                            title = R.string.calories,
+                            currentTarget = target.calories,
+                            valuePadding = 200
+                        )
                     })
                     if (target.protein != null) {
                         add(@Composable {
-                            WeekOverviewChart(foodPerDay, FoodPerDay::protein, target.protein, 20)
+                            WeekOverviewChart(
+                                foodPerDay = foodPerDay,
+                                getKey = FoodPerDay::protein,
+                                title = R.string.protein,
+                                currentTarget = target.protein,
+                                valuePadding = 20
+                            )
                         })
                     }
                     if (target.sugar != null) {
                         add(@Composable {
-                            WeekOverviewChart(foodPerDay, FoodPerDay::sugar, target.sugar, 10)
+                            WeekOverviewChart(
+                                foodPerDay = foodPerDay,
+                                getKey = FoodPerDay::sugar,
+                                title = R.string.sugar,
+                                currentTarget = target.sugar,
+                                valuePadding = 10
+                            )
                         })
                     }
                 }
@@ -78,6 +97,10 @@ private fun HomeContent(
                 HorizontalPager(
                     modifier = Modifier.fillMaxSize(),
                     pageSpacing = SPACING,
+                    flingBehavior = PagerDefaults.flingBehavior(
+                        state = pagerState,
+                        snapPositionalThreshold = 0.2f
+                    ),
                     state = pagerState
                 ) { pageIndex ->
                     items[pageIndex]()

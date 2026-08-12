@@ -1,16 +1,20 @@
 package com.kenji.food.tracker.ui.component.chart
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kenji.food.tracker.R
@@ -37,6 +41,7 @@ import com.patrykandpatrick.vico.compose.common.data.ExtraStore
 fun WeekOverviewChart(
     foodPerDay: List<FoodPerDay>,
     getKey: (FoodPerDay) -> Int,
+    @StringRes title: Int,
     currentTarget: Int,
     valuePadding: Int
 ) {
@@ -60,56 +65,62 @@ fun WeekOverviewChart(
         shape = RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp),
     )
 
-    CartesianChartHost(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(10.dp),
-        chart = rememberCartesianChart(
-            rememberColumnCartesianLayer(
-                columnProvider = remember {
-                    object : ColumnCartesianLayer.ColumnProvider {
-                        override fun getColumn(
-                            entry: ColumnCartesianLayerModel.Entry,
-                            extraStore: ExtraStore
-                        ) = columnShape
+    Column(modifier = Modifier.padding(10.dp)) {
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = stringResource(title),
+            textAlign = TextAlign.Center
+        )
 
-                        override fun getWidestSeriesColumn(
-                            seriesKey: Any,
-                            seriesIndex: Int,
-                            extraStore: ExtraStore
-                        ): LineComponent {
-                            return columnShape
+        CartesianChartHost(
+            modifier = Modifier.fillMaxSize(),
+            chart = rememberCartesianChart(
+                rememberColumnCartesianLayer(
+                    columnProvider = remember {
+                        object : ColumnCartesianLayer.ColumnProvider {
+                            override fun getColumn(
+                                entry: ColumnCartesianLayerModel.Entry,
+                                extraStore: ExtraStore
+                            ) = columnShape
+
+                            override fun getWidestSeriesColumn(
+                                seriesKey: Any,
+                                seriesIndex: Int,
+                                extraStore: ExtraStore
+                            ): LineComponent {
+                                return columnShape
+                            }
                         }
+                    },
+                    rangeProvider = remember {
+                        CartesianLayerRangeProvider.fixed(
+                            minY = 0.0,
+                            maxY = maxOf(
+                                currentTarget.toDouble(),
+                                *foodPerDay.map { getKey(it).toDouble() }.toTypedArray()
+                            ) + valuePadding
+                        )
                     }
-                },
-                rangeProvider = remember {
-                    CartesianLayerRangeProvider.fixed(
-                        minY = 0.0,
-                        maxY = maxOf(
-                            currentTarget.toDouble(),
-                            *foodPerDay.map { getKey(it).toDouble() }.toTypedArray()
-                        ) + valuePadding
+                ),
+                startAxis = VerticalAxis.rememberStart(),
+                bottomAxis = HorizontalAxis.rememberBottom(
+                    valueFormatter = { _, i, _ ->
+                        labels[i.toInt()]
+                    }
+                ),
+                decorations = listOf(
+                    HorizontalLine(
+                        y = { currentTarget.toDouble() },
+                        line = rememberLineComponent(
+                            fill = Fill(MaterialTheme.colorScheme.secondary),
+                            thickness = 2.dp
+                        )
                     )
-                }
+                ),
             ),
-            startAxis = VerticalAxis.rememberStart(),
-            bottomAxis = HorizontalAxis.rememberBottom(
-                valueFormatter = { _, i, _ ->
-                    labels[i.toInt()]
-                }
-            ),
-            decorations = listOf(
-                HorizontalLine(
-                    y = { currentTarget.toDouble() },
-                    line = rememberLineComponent(
-                        fill = Fill(MaterialTheme.colorScheme.secondary),
-                        thickness = 2.dp
-                    )
-                )
-            ),
-        ),
-        modelProducer = modelProducer,
-    )
+            modelProducer = modelProducer,
+        )
+    }
 }
 
 @StringRes

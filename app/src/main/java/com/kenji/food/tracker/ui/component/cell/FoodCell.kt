@@ -2,6 +2,7 @@ package com.kenji.food.tracker.ui.component.cell
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -39,7 +40,10 @@ fun FoodCell(modifier: Modifier = Modifier, item: FoodEntity) {
 
 @Composable
 private fun FoodTags(item: FoodEntity) {
-    Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(5.dp),
+        verticalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
         Tag(text = item.calories.toString())
         item.carbs?.let {
             Tag(text = Formatter.formatDecimal(it))
@@ -61,8 +65,11 @@ private fun PreviewFoodListScreen() {
         id = 1,
         name = "Chicken",
         calories = 25,
-        protein = 20.0,
+        carbs = 20000000.0,
+        protein = 20000000.0,
+        fats = 20000000.0,
         quantity = 100.0,
+        sugar = 500000.0,
         isRecipe = false,
         unit = FoodUnit.G
     )

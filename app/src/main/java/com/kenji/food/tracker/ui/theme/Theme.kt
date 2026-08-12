@@ -1,12 +1,14 @@
 package com.kenji.food.tracker.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
@@ -34,7 +36,6 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun FoodTrackerTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
@@ -54,3 +55,18 @@ fun FoodTrackerTheme(
         content = content
     )
 }
+
+val ColorScheme.protein: Color
+    get() = Color(0xFFD22C22)
+
+val ColorScheme.carbs: Color
+    get() = Color(0xFF224ED2)
+
+val ColorScheme.sugar: Color
+    get() = Color(0xFF5722D2)
+
+val ColorScheme.fats: Color
+    get() = Color(0xFFD29122)
+
+val ColorScheme.saturatedFats: Color
+    get() = Color(0xFFD2C022)
