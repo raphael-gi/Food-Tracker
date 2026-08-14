@@ -118,7 +118,7 @@ private fun CurrentFoodTargetSection(
                 )
                 FoodTargetProperty(
                     value = currentFoodTarget.sugar,
-                    icon = R.drawable.calories,
+                    icon = R.drawable.sugar,
                     iconDescription = R.string.sugar
                 )
             }
@@ -200,7 +200,7 @@ private fun ProfileScreenPreview() {
                 id = 0,
                 calories = 100,
                 protein = 50,
-                sugar = null
+                sugar = 20
             ),
             barcodeScanningEnabled = true
         ) {}

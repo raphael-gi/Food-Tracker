@@ -56,8 +56,9 @@ fun FoodTrackerTheme(
     )
 }
 
+@get:Composable
 val ColorScheme.protein: Color
-    get() = Color(0xFFD22C22)
+    get() = if (isSystemInDarkTheme()) Color(0xFFFF4A4A) else Color(0xFFD22C22)
 
 val ColorScheme.carbs: Color
     get() = Color(0xFF224ED2)

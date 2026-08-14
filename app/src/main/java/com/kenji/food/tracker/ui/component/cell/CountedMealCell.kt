@@ -15,6 +15,11 @@ import androidx.compose.ui.unit.dp
 import com.kenji.food.tracker.entity.CountedMealEntity
 import com.kenji.food.tracker.ui.component.Tag
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
+import com.kenji.food.tracker.ui.theme.carbs
+import com.kenji.food.tracker.ui.theme.fats
+import com.kenji.food.tracker.ui.theme.protein
+import com.kenji.food.tracker.ui.theme.saturatedFats
+import com.kenji.food.tracker.ui.theme.sugar
 import com.kenji.food.tracker.util.Formatter
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -46,14 +51,35 @@ fun CountedMealCell(modifier: Modifier = Modifier, item: CountedMealEntity) {
 private fun FoodTags(item: CountedMealEntity) {
     Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
         Tag(text = item.calories.toString())
-        item.carbs?.let {
-            Tag(text = Formatter.formatDecimal(it))
-        }
         item.protein?.let {
-            Tag(text = Formatter.formatDecimal(it))
+            Tag(
+                text = Formatter.formatDecimal(it),
+                color = MaterialTheme.colorScheme.protein
+            )
+        }
+        item.carbs?.let {
+            Tag(
+                text = Formatter.formatDecimal(it),
+                color = MaterialTheme.colorScheme.carbs
+            )
+        }
+        item.sugar?.let {
+            Tag(
+                text = Formatter.formatDecimal(it),
+                color = MaterialTheme.colorScheme.sugar
+            )
         }
         item.fats?.let {
-            Tag(text = Formatter.formatDecimal(it))
+            Tag(
+                text = Formatter.formatDecimal(it),
+                color = MaterialTheme.colorScheme.fats
+            )
+        }
+        item.saturatedFats?.let {
+            Tag(
+                text = Formatter.formatDecimal(it),
+                color = MaterialTheme.colorScheme.saturatedFats
+            )
         }
     }
 }

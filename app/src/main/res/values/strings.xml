@@ -62,7 +62,10 @@
     <string name="saturdayShort">Sat</string>
     <string name="sundayShort">Sun</string>
 
-    <string name="search">Search</string>
+    <string name="searchFoods">Search Foods</string>
+    <string name="searchRecipes">Search Recipes</string>
+    <string name="searchMeals">Search Meals</string>
+    <string name="searchHistory">Search History</string>
 
     <string name="noFoods">No Foods</string>
     <string name="noRecipes">No Recipes</string>

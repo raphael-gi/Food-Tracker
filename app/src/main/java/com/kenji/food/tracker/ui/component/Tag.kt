@@ -1,6 +1,7 @@
 package com.kenji.food.tracker.ui.component
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -10,17 +11,27 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
 
 @Composable
-fun Tag(modifier: Modifier = Modifier, text: String, @DrawableRes leadingIcon: Int? = null) {
+fun Tag(
+    modifier: Modifier = Modifier,
+    text: String,
+    color: Color = Color.Transparent,
+    @DrawableRes leadingIcon: Int? = null
+) {
     Box(
         modifier = modifier
             .border(
                 1.dp,
                 color = MaterialTheme.colorScheme.outline,
+                shape = AssistChipDefaults.shape
+            )
+            .background(
+                color = color,
                 shape = AssistChipDefaults.shape
             )
     ) {
