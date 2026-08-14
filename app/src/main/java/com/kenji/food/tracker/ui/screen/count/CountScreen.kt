@@ -3,15 +3,14 @@ package com.kenji.food.tracker.ui.screen.count
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FabPosition
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -36,6 +35,7 @@ import com.kenji.food.tracker.entity.CountedMealEntity
 import com.kenji.food.tracker.entity.FoodEntity
 import com.kenji.food.tracker.entity.FoodUnit
 import com.kenji.food.tracker.entity.Recipe
+import com.kenji.food.tracker.ui.component.FoodCard
 import com.kenji.food.tracker.ui.component.FoodSelectorButtons
 import com.kenji.food.tracker.ui.component.TopBar
 import com.kenji.food.tracker.ui.component.button.ActionButton
@@ -48,7 +48,6 @@ import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
 import com.kenji.food.tracker.ui.viewmodel.count.CountAction
 import com.kenji.food.tracker.ui.viewmodel.count.CountEffect
 import com.kenji.food.tracker.ui.viewmodel.count.CountViewModel
-import com.kenji.food.tracker.util.Formatter
 import kotlinx.coroutines.flow.flowOf
 
 @Composable
@@ -76,12 +75,6 @@ fun CountScreen(
 
     Scaffold(
         topBar = { TopBar(title = R.string.countMeal) },
-        floatingActionButtonPosition = FabPosition.Center,
-        floatingActionButton = {
-            ActionButton(text = R.string.confirm) {
-                viewModel.onAction(CountAction.CountMeal)
-            }
-        }
     ) { innerPadding ->
         CountContent(
             modifier = Modifier.padding(innerPadding),
@@ -109,103 +102,73 @@ fun CountContent(
     onAction: (CountAction) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scrollState = rememberScrollState()
 
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        AnimatedVisibility(selectedMeal != null) {
-            selectedMeal?.let { selectedMeal ->
-                countedMeal?.let {
-                    FoodCard(
-                        recipe = selectedMeal,
-                        countedMeal = countedMeal,
-                        quantity = quantity,
-                        onSetQuantity = { onAction(CountAction.SetMealQuantity(it)) }
-                    )
-                }
-            }
-        }
-
+    Column(
+        modifier = modifier.verticalScroll(scrollState),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
         FoodSelectorButtons(
             onClickSelectButton = { onAction(CountAction.ToggleSelectMode) },
             onClickScanButton = { onAction(CountAction.LaunchCamera) }
         )
+
+        AnimatedVisibility(selectedMeal != null) {
+            if (selectedMeal != null && countedMeal != null) {
+                CountedMealOverview(
+                    recipe = selectedMeal,
+                    countedMeal = countedMeal,
+                    quantity = quantity,
+                    onAction = onAction
+                )
+            }
+        }
 
         if (isSelectMode) {
             ModalBottomSheet(
                 onDismissRequest = { onAction(CountAction.ToggleSelectMode) },
                 sheetState = sheetState
             ) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    SelectionList(foods, query, onAction)
-                }
+                SelectionList(foods, query, onAction)
             }
         }
     }
 }
 
 @Composable
-private fun FoodCard(
+private fun CountedMealOverview(
     recipe: Recipe,
     countedMeal: CountedMealEntity,
     quantity: Double?,
-    onSetQuantity: (String) -> Unit
+    onAction: (CountAction) -> Unit
 ) {
-    Column(
-        modifier = Modifier.padding(10.dp),
-        verticalArrangement = Arrangement.spacedBy(5.dp)
-    ) {
-        Text(
-            text = recipe.food.name,
-            style = MaterialTheme.typography.titleLarge
-        )
-
-        Text(
-            text = "${countedMeal.calories.toString()} kcal",
-            style = MaterialTheme.typography.labelLarge
-        )
-
-        countedMeal.fats?.let { fats ->
-            Text(
-                text = "Fats: ${Formatter.formatDecimal(fats)}g",
-                style = MaterialTheme.typography.labelLarge
-            )
-        }
-
-        countedMeal.saturatedFats?.let { saturatedFats ->
-            Text(
-                text = "Saturated Fats: ${Formatter.formatDecimal(saturatedFats)}g",
-                style = MaterialTheme.typography.labelLarge
-            )
-        }
-
-        countedMeal.carbs?.let { carbs ->
-            Text(
-                text = "Carbs: ${Formatter.formatDecimal(carbs)}g",
-                style = MaterialTheme.typography.labelLarge
-            )
-        }
-
-        countedMeal.sugar?.let { sugar ->
-            Text(
-                text = stringResource(R.string.sugarLabel, Formatter.formatDecimal(sugar)),
-                style = MaterialTheme.typography.labelLarge
-            )
-        }
-
-        countedMeal.protein?.let { protein ->
-            Text(
-                text = "Protein: ${Formatter.formatDecimal(protein)}g",
-                style = MaterialTheme.typography.labelLarge
-            )
-        }
-
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         FormNumberField(
+            modifier = Modifier.padding(horizontal = 10.dp),
             value = quantity,
             label = stringResource(
                 R.string.quantityUnitLabel,
                 recipe.food.unit.toString().lowercase()
             ),
-            onValueChange = onSetQuantity
+            onValueChange = {
+                onAction(CountAction.SetMealQuantity(it))
+            }
         )
+
+        FoodCard(
+            modifier = Modifier.padding(10.dp),
+            name = countedMeal.name,
+            calories = countedMeal.calories,
+            protein = countedMeal.protein,
+            carbs = countedMeal.carbs,
+            sugar = countedMeal.sugar,
+            fats = countedMeal.fats,
+            saturatedFats = countedMeal.saturatedFats
+        )
+
+        ActionButton(text = R.string.confirm) {
+            onAction(CountAction.CountMeal)
+        }
     }
 }
 
@@ -215,7 +178,7 @@ private fun SelectionList(
     query: String,
     onAction: (CountAction) -> Unit
 ) {
-    Column {
+    Column(modifier = Modifier.fillMaxSize()) {
         SearchField(query = query, placeholder = R.string.searchMeals) {
             onAction(CountAction.Search(it))
         }

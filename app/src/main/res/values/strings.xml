@@ -31,6 +31,7 @@
 
     <string name="countMeal">Count Meal</string>
     <string name="name">Name</string>
+    <string name="totalKcal">Total %1s Kcal</string>
     <string name="calories">Calories</string>
     <string name="caloriesLabel">Calories (kcal)</string>
     <string name="calorieTargetLabel">Calorie Target (kcal)</string>

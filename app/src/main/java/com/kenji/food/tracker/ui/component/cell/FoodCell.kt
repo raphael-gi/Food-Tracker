@@ -51,7 +51,9 @@ private fun FoodTags(item: FoodEntity, quantity: Double? = null) {
         horizontalArrangement = Arrangement.spacedBy(5.dp),
         verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
-        Tag(text = (item.calories?.times(multiplier)).toString())
+        item.calories?.let {
+            Tag(text = (Formatter.formatDecimal(it.times(multiplier))))
+        }
         item.protein?.let {
             Tag(
                 text = Formatter.formatDecimal(it.times(multiplier)),
