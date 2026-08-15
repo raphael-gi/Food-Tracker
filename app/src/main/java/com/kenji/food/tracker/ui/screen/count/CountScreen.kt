@@ -102,6 +102,7 @@ fun CountScreen(
             selectedMeal = state.selectedMeal,
             countedMeal = state.countedMeal,
             quantity = state.quantity,
+            eatenAt = state.eatenAt,
             isSelectMealMode = state.isSelectMealMode,
             isSelectDateMode = state.isSelectDateMode,
             query = state.query,
@@ -118,6 +119,7 @@ fun CountContent(
     selectedMeal: Recipe?,
     countedMeal: CountedMealEntity?,
     quantity: Double?,
+    eatenAt: Long,
     isSelectMealMode: Boolean,
     isSelectDateMode: Boolean,
     query: String,
@@ -141,6 +143,7 @@ fun CountContent(
                     recipe = selectedMeal,
                     countedMeal = countedMeal,
                     quantity = quantity,
+                    eatenAt = eatenAt,
                     onAction = onAction
                 )
             }
@@ -158,11 +161,9 @@ fun CountContent(
 
             isSelectDateMode -> {
                 val datePickerState = rememberDatePickerState(
-                    initialSelectedDate = countedMeal?.eatenAt?.let {
-                        LocalDateTime
-                            .ofInstant(Instant.ofEpochMilli(it), ZoneOffset.systemDefault())
-                            .toLocalDate()
-                    },
+                    initialSelectedDate = LocalDateTime
+                        .ofInstant(Instant.ofEpochMilli(eatenAt), ZoneOffset.systemDefault())
+                        .toLocalDate(),
                     selectableDates = object : SelectableDates {
                         override fun isSelectableDate(utcTimeMillis: Long): Boolean {
                             return utcTimeMillis <= Instant.now().toEpochMilli()
@@ -192,6 +193,7 @@ private fun CountedMealOverview(
     recipe: Recipe,
     countedMeal: CountedMealEntity,
     quantity: Double?,
+    eatenAt: Long,
     onAction: (CountAction) -> Unit
 ) {
     Column {
@@ -219,12 +221,9 @@ private fun CountedMealOverview(
                 shape = ShapeDefaults.Small,
                 onClick = { onAction(CountAction.ToggleSelectDateMode) }
             ) {
-                val isDateToday = remember(countedMeal.eatenAt) {
+                val isDateToday = remember(eatenAt) {
                     LocalDateTime
-                        .ofInstant(
-                            Instant.ofEpochMilli(countedMeal.eatenAt),
-                            ZoneId.systemDefault()
-                        )
+                        .ofInstant(Instant.ofEpochMilli(eatenAt), ZoneId.systemDefault())
                         .toLocalDate()
                         .isEqual(LocalDate.now())
                 }
@@ -341,6 +340,7 @@ private fun CountContentPreview() {
                     saturatedFats = 5.0
                 ),
                 quantity = 5.0,
+                eatenAt = Instant.now().toEpochMilli(),
                 isSelectMealMode = false,
                 isSelectDateMode = false,
                 query = ""

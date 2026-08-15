@@ -2,7 +2,7 @@ package com.kenji.food.tracker.ui.viewmodel.count
 
 import com.kenji.food.tracker.entity.CountedMealEntity
 import com.kenji.food.tracker.entity.Recipe
-import java.time.LocalDate
+import java.time.Instant
 
 data class CountState(
     val isSelectMealMode: Boolean = false,
@@ -10,6 +10,7 @@ data class CountState(
     val selectedMeal: Recipe? = null,
     val countedMeal: CountedMealEntity? = null,
     val quantity: Double? = null,
+    val eatenAt: Long = Instant.now().toEpochMilli(),
     val query: String = ""
 )
 
