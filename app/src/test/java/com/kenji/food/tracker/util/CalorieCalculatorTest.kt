@@ -98,7 +98,7 @@ class CalorieCalculatorTest {
                 id = 0,
                 name = "",
                 calories = null,
-                quantity = 100.0,
+                quantity = 1.0,
                 isRecipe = true,
                 unit = FoodUnit.G
             ),
@@ -147,5 +147,63 @@ class CalorieCalculatorTest {
         Assert.assertEquals(911, result.calories)
         Assert.assertEquals(78.61, result.carbs)
         Assert.assertEquals(23.1, result.sugar)
+    }
+
+    @Test
+    fun `calculate the recipe with different quantity and portions`() {
+        val recipe = Recipe(
+            food = FoodEntity(
+                id = 0,
+                name = "",
+                calories = null,
+                quantity = 5.0,
+                isRecipe = true,
+                unit = FoodUnit.G
+            ),
+            foods = listOf(
+                RecipeFoodEntity(
+                    recipeId = 0,
+                    foodId = 0,
+                    food = FoodEntity(
+                        id = 0,
+                        name = "",
+                        calories = 255,
+                        carbs = 16.2,
+                        sugar = 5.5,
+                        protein = 25.0,
+                        fats = 13.4,
+
+                        quantity = 100.0,
+                        unit = FoodUnit.G,
+                        isRecipe = false
+                    ),
+                    recipeQuantity = 200.0
+                ),
+                RecipeFoodEntity(
+                    recipeId = 0,
+                    foodId = 0,
+                    food = FoodEntity(
+                        id = 0,
+                        name = "",
+                        calories = 122,
+                        carbs = 25.01,
+                        sugar = 5.5,
+                        protein = 25.0,
+                        fats = 13.4,
+
+                        quantity = 100.0,
+                        unit = FoodUnit.G,
+                        isRecipe = false
+                    ),
+                    recipeQuantity = 80.0
+                )
+            )
+        )
+
+        val result = CalorieCalculator.calculateCountedRecipe(recipe, 1.5)
+
+        Assert.assertEquals(182, result.calories)
+        Assert.assertEquals(15.72, result.carbs)
+        Assert.assertEquals(4.62, result.sugar)
     }
 }

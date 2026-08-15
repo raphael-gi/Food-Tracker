@@ -1,6 +1,7 @@
 package com.kenji.food.tracker.util
 
 import kotlin.math.floor
+import kotlin.math.round
 
 object Formatter {
     /**
@@ -11,6 +12,6 @@ object Formatter {
             return value.toInt().toString()
         }
 
-        return value.toString()
+        return (round(value * 100) / 100).toString()
     }
 }
