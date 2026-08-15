@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -15,12 +14,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kenji.food.tracker.R
 import com.kenji.food.tracker.entity.FoodPerDay
-import com.kenji.food.tracker.entity.FoodTargetEntity
-import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.compose.cartesian.axis.VerticalAxis
@@ -134,23 +130,5 @@ private fun getShortDayOfWeek(day: Int): Int? {
         5 -> R.string.saturdayShort
         6 -> R.string.sundayShort
         else -> null
-    }
-}
-
-
-@Preview(heightDp = 400)
-@Composable
-private fun WeekOverviewChartPreview() {
-    val target = FoodTargetEntity(
-        id = 0,
-        calories = 2000,
-        protein = null,
-        sugar = null
-    )
-
-    FoodTrackerTheme {
-        Surface {
-            // WeekOverviewChart(emptyList(), target)
-        }
     }
 }

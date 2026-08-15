@@ -113,7 +113,7 @@ private fun CurrentFoodTargetSection(
                 )
                 FoodTargetProperty(
                     value = currentFoodTarget.protein,
-                    icon = R.drawable.calories,
+                    icon = R.drawable.protein,
                     iconDescription = R.string.protein
                 )
                 FoodTargetProperty(
