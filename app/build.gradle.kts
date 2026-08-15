@@ -32,7 +32,7 @@ android {
         minSdk = 33
         targetSdk = 37
         versionCode = 2
-        versionName = "1.0.1"
+        versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -116,4 +116,12 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.tooling)
+}
+
+tasks.register("versionName") {
+    description = "Get the Version Name"
+
+    doLast {
+        println(android.defaultConfig.versionName)
+    }
 }

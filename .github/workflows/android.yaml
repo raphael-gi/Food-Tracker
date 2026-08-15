@@ -18,6 +18,12 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Get version name
+        run: |
+          chmod +x gradlew
+          VERSION_NAME=$(./gradlew -q :app:printVersionName)
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+
       - name: Build signed APK
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -32,6 +38,6 @@ jobs:
 
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ github.run_number }}
-          files: app/build/outputs/apk/prod/release/app-prod-release.apk
+          tag_name: Food Tracker ${{ env.VERSION_NAME }}
+          files: app/build/outputs/apk/prod/release/food-tracker-${{ env.VERSION_NAME }}.apk
 
