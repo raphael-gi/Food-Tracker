@@ -10,6 +10,7 @@
 
     <string name="start">Start</string>
     <string name="finish">Finish</string>
+    <string name="ok">OK</string>
     <string name="allow">Allow</string>
     <string name="add">Add</string>
     <string name="scan">Scan</string>
@@ -75,4 +76,5 @@
     <string name="barcodeScanning">Barcode scanning</string>
 
     <string name="portions">Portions</string>
+    <string name="date">Date</string>
 </resources>

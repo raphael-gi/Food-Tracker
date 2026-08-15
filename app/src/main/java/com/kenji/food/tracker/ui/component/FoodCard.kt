@@ -39,105 +39,103 @@ fun FoodCard(
     fats: Double?,
     saturatedFats: Double?,
 ) {
-    Column(modifier = modifier) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(SPACING.dp)
+    ) {
         Text(
             text = name,
             style = MaterialTheme.typography.titleLarge
         )
 
-        Column(
-            modifier = Modifier.padding(5.dp),
-            verticalArrangement = Arrangement.spacedBy(SPACING.dp)
-        ) {
-            calories?.let {
-                MacroCard(modifier = Modifier.fillMaxWidth()) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(stringResource(R.string.totalKcal, it))
-                        Icon(
-                            painter = painterResource(R.drawable.calories),
-                            contentDescription = stringResource(R.string.calories)
-                        )
-                    }
+        calories?.let {
+            MacroCard(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(stringResource(R.string.totalKcal, it))
+                    Icon(
+                        painter = painterResource(R.drawable.calories),
+                        contentDescription = stringResource(R.string.calories)
+                    )
                 }
             }
+        }
 
-            protein?.let {
-                MacroCard(modifier = Modifier.fillMaxWidth()) {
+        protein?.let {
+            MacroCard(modifier = Modifier.fillMaxWidth()) {
+                Row {
+                    Spacer(modifier = Modifier.weight(1f))
+                    Icon(
+                        modifier = Modifier,
+                        painter = painterResource(R.drawable.protein),
+                        contentDescription = stringResource(R.string.protein)
+                    )
+                }
+                Text("${Formatter.formatDecimal(it)}g")
+                Text(stringResource(R.string.protein))
+            }
+        }
+
+        Row(horizontalArrangement = Arrangement.spacedBy(SPACING.dp)) {
+            carbs?.let {
+                MacroCard(modifier = Modifier.weight(1f)) {
                     Row {
                         Spacer(modifier = Modifier.weight(1f))
                         Icon(
                             modifier = Modifier,
-                            painter = painterResource(R.drawable.protein),
-                            contentDescription = stringResource(R.string.protein)
+                            painter = painterResource(R.drawable.carbs),
+                            contentDescription = stringResource(R.string.carbs)
                         )
                     }
                     Text("${Formatter.formatDecimal(it)}g")
-                    Text(stringResource(R.string.protein))
+                    Text(stringResource(R.string.carbs))
                 }
             }
-
-            Row(horizontalArrangement = Arrangement.spacedBy(SPACING.dp)) {
-                carbs?.let {
-                    MacroCard(modifier = Modifier.weight(1f)) {
-                        Row {
-                            Spacer(modifier = Modifier.weight(1f))
-                            Icon(
-                                modifier = Modifier,
-                                painter = painterResource(R.drawable.carbs),
-                                contentDescription = stringResource(R.string.carbs)
-                            )
-                        }
-                        Text("${Formatter.formatDecimal(it)}g")
-                        Text(stringResource(R.string.carbs))
+            sugar?.let {
+                MacroCard(modifier = Modifier.weight(1f)) {
+                    Row {
+                        Spacer(modifier = Modifier.weight(1f))
+                        Icon(
+                            modifier = Modifier,
+                            painter = painterResource(R.drawable.sugar),
+                            contentDescription = stringResource(R.string.sugar)
+                        )
                     }
-                }
-                sugar?.let {
-                    MacroCard(modifier = Modifier.weight(1f)) {
-                        Row {
-                            Spacer(modifier = Modifier.weight(1f))
-                            Icon(
-                                modifier = Modifier,
-                                painter = painterResource(R.drawable.sugar),
-                                contentDescription = stringResource(R.string.sugar)
-                            )
-                        }
-                        Text("${Formatter.formatDecimal(it)}g")
-                        Text(stringResource(R.string.sugar))
-                    }
+                    Text("${Formatter.formatDecimal(it)}g")
+                    Text(stringResource(R.string.sugar))
                 }
             }
+        }
 
-            Row {
-                fats?.let {
-                    MacroCard(modifier = Modifier.weight(1f)) {
-                        Row {
-                            Spacer(modifier = Modifier.weight(1f))
-                            Icon(
-                                modifier = Modifier,
-                                painter = painterResource(R.drawable.fat),
-                                contentDescription = stringResource(R.string.fat)
-                            )
-                        }
-                        Text("${Formatter.formatDecimal(it)}g")
-                        Text(stringResource(R.string.fat))
+        Row {
+            fats?.let {
+                MacroCard(modifier = Modifier.weight(1f)) {
+                    Row {
+                        Spacer(modifier = Modifier.weight(1f))
+                        Icon(
+                            modifier = Modifier,
+                            painter = painterResource(R.drawable.fat),
+                            contentDescription = stringResource(R.string.fat)
+                        )
                     }
+                    Text("${Formatter.formatDecimal(it)}g")
+                    Text(stringResource(R.string.fat))
                 }
-                saturatedFats?.let {
-                    MacroCard(modifier = Modifier.weight(1f)) {
-                        Row {
-                            Spacer(modifier = Modifier.weight(1f))
-                            Icon(
-                                modifier = Modifier,
-                                painter = painterResource(R.drawable.saturatedfat),
-                                contentDescription = stringResource(R.string.saturatedFat)
-                            )
-                        }
-                        Text("${Formatter.formatDecimal(it)}g")
-                        Text(stringResource(R.string.saturatedFat))
+            }
+            saturatedFats?.let {
+                MacroCard(modifier = Modifier.weight(1f)) {
+                    Row {
+                        Spacer(modifier = Modifier.weight(1f))
+                        Icon(
+                            modifier = Modifier,
+                            painter = painterResource(R.drawable.saturated_fat),
+                            contentDescription = stringResource(R.string.saturatedFat)
+                        )
                     }
+                    Text("${Formatter.formatDecimal(it)}g")
+                    Text(stringResource(R.string.saturatedFat))
                 }
             }
         }

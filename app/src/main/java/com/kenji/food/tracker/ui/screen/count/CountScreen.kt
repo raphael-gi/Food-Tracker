@@ -4,22 +4,37 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SelectableDates
+import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -49,6 +64,11 @@ import com.kenji.food.tracker.ui.viewmodel.count.CountAction
 import com.kenji.food.tracker.ui.viewmodel.count.CountEffect
 import com.kenji.food.tracker.ui.viewmodel.count.CountViewModel
 import kotlinx.coroutines.flow.flowOf
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
 
 @Composable
 fun CountScreen(
@@ -82,7 +102,8 @@ fun CountScreen(
             selectedMeal = state.selectedMeal,
             countedMeal = state.countedMeal,
             quantity = state.quantity,
-            isSelectMode = state.isSelectMode,
+            isSelectMealMode = state.isSelectMealMode,
+            isSelectDateMode = state.isSelectDateMode,
             query = state.query,
             onAction = viewModel::onAction
         )
@@ -97,7 +118,8 @@ fun CountContent(
     selectedMeal: Recipe?,
     countedMeal: CountedMealEntity?,
     quantity: Double?,
-    isSelectMode: Boolean,
+    isSelectMealMode: Boolean,
+    isSelectDateMode: Boolean,
     query: String,
     onAction: (CountAction) -> Unit
 ) {
@@ -109,7 +131,7 @@ fun CountContent(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         FoodSelectorButtons(
-            onClickSelectButton = { onAction(CountAction.ToggleSelectMode) },
+            onClickSelectButton = { onAction(CountAction.ToggleSelectMealMode) },
             onClickScanButton = { onAction(CountAction.LaunchCamera) }
         )
 
@@ -124,12 +146,42 @@ fun CountContent(
             }
         }
 
-        if (isSelectMode) {
-            ModalBottomSheet(
-                onDismissRequest = { onAction(CountAction.ToggleSelectMode) },
-                sheetState = sheetState
-            ) {
-                SelectionList(foods, query, onAction)
+        when {
+            isSelectMealMode -> {
+                ModalBottomSheet(
+                    onDismissRequest = { onAction(CountAction.ToggleSelectMealMode) },
+                    sheetState = sheetState
+                ) {
+                    SelectionList(foods, query, onAction)
+                }
+            }
+
+            isSelectDateMode -> {
+                val datePickerState = rememberDatePickerState(
+                    initialSelectedDate = countedMeal?.eatenAt?.let {
+                        LocalDateTime
+                            .ofInstant(Instant.ofEpochMilli(it), ZoneOffset.systemDefault())
+                            .toLocalDate()
+                    },
+                    selectableDates = object : SelectableDates {
+                        override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                            return utcTimeMillis <= Instant.now().toEpochMilli()
+                        }
+                    }
+                )
+
+                DatePickerDialog(
+                    onDismissRequest = { onAction(CountAction.ToggleSelectDateMode) },
+                    confirmButton = {
+                        TextButton(
+                            onClick = { onAction(CountAction.SelectDate(datePickerState.selectedDateMillis)) }
+                        ) {
+                            Text(stringResource(R.string.ok))
+                        }
+                    },
+                ) {
+                    DatePicker(datePickerState)
+                }
             }
         }
     }
@@ -142,18 +194,50 @@ private fun CountedMealOverview(
     quantity: Double?,
     onAction: (CountAction) -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        FormNumberField(
-            modifier = Modifier.padding(horizontal = 10.dp),
-            value = quantity,
-            label = stringResource(
-                R.string.quantityUnitLabel,
-                recipe.food.unit.toString().lowercase()
-            ),
-            onValueChange = {
-                onAction(CountAction.SetMealQuantity(it))
+    Column {
+        Row(
+            modifier = Modifier.padding(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.Bottom
+        ) {
+            FormNumberField(
+                modifier = Modifier.weight(1f),
+                value = quantity,
+                label = stringResource(
+                    R.string.quantityUnitLabel,
+                    recipe.food.unit.toString().lowercase()
+                ),
+                onValueChange = {
+                    onAction(CountAction.SetMealQuantity(it))
+                }
+            )
+
+            Button(
+                modifier = Modifier
+                    .heightIn(min = TextFieldDefaults.MinHeight)
+                    .widthIn(min = TextFieldDefaults.MinHeight),
+                shape = ShapeDefaults.Small,
+                onClick = { onAction(CountAction.ToggleSelectDateMode) }
+            ) {
+                val isDateToday = remember(countedMeal.eatenAt) {
+                    LocalDateTime
+                        .ofInstant(
+                            Instant.ofEpochMilli(countedMeal.eatenAt),
+                            ZoneId.systemDefault()
+                        )
+                        .toLocalDate()
+                        .isEqual(LocalDate.now())
+                }
+
+                val dateIcon = if (isDateToday) R.drawable.calendar_today
+                else R.drawable.calendar_check
+
+                Icon(
+                    painter = painterResource(dateIcon),
+                    contentDescription = stringResource(R.string.date)
+                )
             }
-        )
+        }
 
         FoodCard(
             modifier = Modifier.padding(10.dp),
@@ -257,7 +341,8 @@ private fun CountContentPreview() {
                     saturatedFats = 5.0
                 ),
                 quantity = 5.0,
-                isSelectMode = false,
+                isSelectMealMode = false,
+                isSelectDateMode = false,
                 query = ""
             ) { }
         }

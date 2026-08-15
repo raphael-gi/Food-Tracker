@@ -60,6 +60,7 @@ class CountHistoryListViewModel @Inject constructor(
 
         viewModelScope.launch {
             countedMealDao.delete(ids)
+            _state.update { it.copy(selectedItems = emptySet()) }
         }
     }
 
