@@ -36,7 +36,6 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleProdRelease
 
-
       - name: Rename APK
         run: |
           mv app/build/outputs/apk/prod/release/app-prod-release.apk \
@@ -44,6 +43,7 @@ jobs:
 
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: Food Tracker ${{ env.VERSION_NAME }}
+          tag_name: v${{ env.VERSION_NAME }}
+          name: Food Tracker ${{ env.VERSION_NAME }}
           files: app/build/outputs/apk/prod/release/food-tracker-${{ env.VERSION_NAME }}.apk
 
