@@ -1,6 +1,5 @@
 package com.kenji.food.tracker.ui.component
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -21,7 +20,6 @@ fun Tag(
     modifier: Modifier = Modifier,
     text: String,
     color: Color = Color.Transparent,
-    @DrawableRes leadingIcon: Int? = null
 ) {
     Box(
         modifier = modifier

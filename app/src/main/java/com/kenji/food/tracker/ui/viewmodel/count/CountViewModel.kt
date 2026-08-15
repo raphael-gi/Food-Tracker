@@ -113,7 +113,7 @@ class CountViewModel @Inject constructor(
         }
 
         _state.update {
-            it.copy(countedMeal = it.countedMeal?.copy(eatenAt = date))
+            it.copy(eatenAt = date)
         }
     }
 
@@ -125,17 +125,20 @@ class CountViewModel @Inject constructor(
         val quantity = input.toDoubleOrNull()
 
         _state.update {
+            val countedMeal = it.selectedMeal?.let { recipe ->
+                getCountedMealOfRecipe(recipe, quantity ?: 0.0)
+            }
+
             it.copy(
                 quantity = quantity,
-                countedMeal = it.selectedMeal?.let { recipe ->
-                    getCountedMealOfRecipe(recipe, quantity ?: 0.0)
-                }
+                countedMeal = countedMeal
             )
         }
     }
 
     private fun onCountMeal() {
-        val countedMeal = state.value.countedMeal ?: return
+        val eatenAt = state.value.eatenAt
+        val countedMeal = state.value.countedMeal?.copy(eatenAt = eatenAt) ?: return
         val foodId = state.value.selectedMeal?.food?.id ?: return
 
         viewModelScope.launch {

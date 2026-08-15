@@ -40,7 +40,7 @@ class CalorieCalculatorTest {
                 id = 0,
                 name = "",
                 calories = null,
-                quantity = 100.0,
+                quantity = 1.0,
                 isRecipe = true,
                 unit = FoodUnit.G
             ),
