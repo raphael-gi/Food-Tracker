@@ -52,7 +52,8 @@ object CalorieCalculator {
         )
 
         return recipe.foods.fold(initialValue) { acc, entity ->
-            val multiplier = quantity * (entity.recipeQuantity / entity.food.quantity)
+            val multiplier =
+                (quantity / recipe.food.quantity) * (entity.recipeQuantity / entity.food.quantity)
 
             return@fold acc.copy(
                 calories = acc.calories?.plus(

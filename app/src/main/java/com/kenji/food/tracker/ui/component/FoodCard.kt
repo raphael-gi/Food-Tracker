@@ -109,7 +109,7 @@ fun FoodCard(
             }
         }
 
-        Row {
+        Row(horizontalArrangement = Arrangement.spacedBy(SPACING.dp)) {
             fats?.let {
                 MacroCard(modifier = Modifier.weight(1f)) {
                     Row {
