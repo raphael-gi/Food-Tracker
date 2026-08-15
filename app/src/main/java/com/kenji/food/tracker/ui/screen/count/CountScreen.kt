@@ -3,24 +3,38 @@ package com.kenji.food.tracker.ui.screen.count
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FabPosition
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SelectableDates
+import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -36,6 +50,7 @@ import com.kenji.food.tracker.entity.CountedMealEntity
 import com.kenji.food.tracker.entity.FoodEntity
 import com.kenji.food.tracker.entity.FoodUnit
 import com.kenji.food.tracker.entity.Recipe
+import com.kenji.food.tracker.ui.component.FoodCard
 import com.kenji.food.tracker.ui.component.FoodSelectorButtons
 import com.kenji.food.tracker.ui.component.TopBar
 import com.kenji.food.tracker.ui.component.button.ActionButton
@@ -48,8 +63,12 @@ import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
 import com.kenji.food.tracker.ui.viewmodel.count.CountAction
 import com.kenji.food.tracker.ui.viewmodel.count.CountEffect
 import com.kenji.food.tracker.ui.viewmodel.count.CountViewModel
-import com.kenji.food.tracker.util.Formatter
 import kotlinx.coroutines.flow.flowOf
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
 
 @Composable
 fun CountScreen(
@@ -76,12 +95,6 @@ fun CountScreen(
 
     Scaffold(
         topBar = { TopBar(title = R.string.countMeal) },
-        floatingActionButtonPosition = FabPosition.Center,
-        floatingActionButton = {
-            ActionButton(text = R.string.confirm) {
-                viewModel.onAction(CountAction.CountMeal)
-            }
-        }
     ) { innerPadding ->
         CountContent(
             modifier = Modifier.padding(innerPadding),
@@ -89,7 +102,8 @@ fun CountScreen(
             selectedMeal = state.selectedMeal,
             countedMeal = state.countedMeal,
             quantity = state.quantity,
-            isSelectMode = state.isSelectMode,
+            isSelectMealMode = state.isSelectMealMode,
+            isSelectDateMode = state.isSelectDateMode,
             query = state.query,
             onAction = viewModel::onAction
         )
@@ -104,38 +118,69 @@ fun CountContent(
     selectedMeal: Recipe?,
     countedMeal: CountedMealEntity?,
     quantity: Double?,
-    isSelectMode: Boolean,
+    isSelectMealMode: Boolean,
+    isSelectDateMode: Boolean,
     query: String,
     onAction: (CountAction) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scrollState = rememberScrollState()
 
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        AnimatedVisibility(selectedMeal != null) {
-            selectedMeal?.let { selectedMeal ->
-                countedMeal?.let {
-                    FoodCard(
-                        recipe = selectedMeal,
-                        countedMeal = countedMeal,
-                        quantity = quantity,
-                        onSetQuantity = { onAction(CountAction.SetMealQuantity(it)) }
-                    )
-                }
-            }
-        }
-
+    Column(
+        modifier = modifier.verticalScroll(scrollState),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
         FoodSelectorButtons(
-            onClickSelectButton = { onAction(CountAction.ToggleSelectMode) },
+            onClickSelectButton = { onAction(CountAction.ToggleSelectMealMode) },
             onClickScanButton = { onAction(CountAction.LaunchCamera) }
         )
 
-        if (isSelectMode) {
-            ModalBottomSheet(
-                onDismissRequest = { onAction(CountAction.ToggleSelectMode) },
-                sheetState = sheetState
-            ) {
-                Box(modifier = Modifier.fillMaxSize()) {
+        AnimatedVisibility(selectedMeal != null) {
+            if (selectedMeal != null && countedMeal != null) {
+                CountedMealOverview(
+                    recipe = selectedMeal,
+                    countedMeal = countedMeal,
+                    quantity = quantity,
+                    onAction = onAction
+                )
+            }
+        }
+
+        when {
+            isSelectMealMode -> {
+                ModalBottomSheet(
+                    onDismissRequest = { onAction(CountAction.ToggleSelectMealMode) },
+                    sheetState = sheetState
+                ) {
                     SelectionList(foods, query, onAction)
+                }
+            }
+
+            isSelectDateMode -> {
+                val datePickerState = rememberDatePickerState(
+                    initialSelectedDate = countedMeal?.eatenAt?.let {
+                        LocalDateTime
+                            .ofInstant(Instant.ofEpochMilli(it), ZoneOffset.systemDefault())
+                            .toLocalDate()
+                    },
+                    selectableDates = object : SelectableDates {
+                        override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                            return utcTimeMillis <= Instant.now().toEpochMilli()
+                        }
+                    }
+                )
+
+                DatePickerDialog(
+                    onDismissRequest = { onAction(CountAction.ToggleSelectDateMode) },
+                    confirmButton = {
+                        TextButton(
+                            onClick = { onAction(CountAction.SelectDate(datePickerState.selectedDateMillis)) }
+                        ) {
+                            Text(stringResource(R.string.ok))
+                        }
+                    },
+                ) {
+                    DatePicker(datePickerState)
                 }
             }
         }
@@ -143,69 +188,71 @@ fun CountContent(
 }
 
 @Composable
-private fun FoodCard(
+private fun CountedMealOverview(
     recipe: Recipe,
     countedMeal: CountedMealEntity,
     quantity: Double?,
-    onSetQuantity: (String) -> Unit
+    onAction: (CountAction) -> Unit
 ) {
-    Column(
-        modifier = Modifier.padding(10.dp),
-        verticalArrangement = Arrangement.spacedBy(5.dp)
-    ) {
-        Text(
-            text = recipe.food.name,
-            style = MaterialTheme.typography.titleLarge
+    Column {
+        Row(
+            modifier = Modifier.padding(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.Bottom
+        ) {
+            FormNumberField(
+                modifier = Modifier.weight(1f),
+                value = quantity,
+                label = stringResource(
+                    R.string.quantityUnitLabel,
+                    recipe.food.unit.toString().lowercase()
+                ),
+                onValueChange = {
+                    onAction(CountAction.SetMealQuantity(it))
+                }
+            )
+
+            Button(
+                modifier = Modifier
+                    .heightIn(min = TextFieldDefaults.MinHeight)
+                    .widthIn(min = TextFieldDefaults.MinHeight),
+                shape = ShapeDefaults.Small,
+                onClick = { onAction(CountAction.ToggleSelectDateMode) }
+            ) {
+                val isDateToday = remember(countedMeal.eatenAt) {
+                    LocalDateTime
+                        .ofInstant(
+                            Instant.ofEpochMilli(countedMeal.eatenAt),
+                            ZoneId.systemDefault()
+                        )
+                        .toLocalDate()
+                        .isEqual(LocalDate.now())
+                }
+
+                val dateIcon = if (isDateToday) R.drawable.calendar_today
+                else R.drawable.calendar_check
+
+                Icon(
+                    painter = painterResource(dateIcon),
+                    contentDescription = stringResource(R.string.date)
+                )
+            }
+        }
+
+        FoodCard(
+            modifier = Modifier.padding(10.dp),
+            name = countedMeal.name,
+            calories = countedMeal.calories,
+            protein = countedMeal.protein,
+            carbs = countedMeal.carbs,
+            sugar = countedMeal.sugar,
+            fats = countedMeal.fats,
+            saturatedFats = countedMeal.saturatedFats
         )
 
-        Text(
-            text = "${countedMeal.calories.toString()} kcal",
-            style = MaterialTheme.typography.labelLarge
-        )
-
-        countedMeal.fats?.let { fats ->
-            Text(
-                text = "Fats: ${Formatter.formatDecimal(fats)}g",
-                style = MaterialTheme.typography.labelLarge
-            )
+        ActionButton(text = R.string.confirm) {
+            onAction(CountAction.CountMeal)
         }
-
-        countedMeal.saturatedFats?.let { saturatedFats ->
-            Text(
-                text = "Saturated Fats: ${Formatter.formatDecimal(saturatedFats)}g",
-                style = MaterialTheme.typography.labelLarge
-            )
-        }
-
-        countedMeal.carbs?.let { carbs ->
-            Text(
-                text = "Carbs: ${Formatter.formatDecimal(carbs)}g",
-                style = MaterialTheme.typography.labelLarge
-            )
-        }
-
-        countedMeal.sugar?.let { sugar ->
-            Text(
-                text = stringResource(R.string.sugarLabel, Formatter.formatDecimal(sugar)),
-                style = MaterialTheme.typography.labelLarge
-            )
-        }
-
-        countedMeal.protein?.let { protein ->
-            Text(
-                text = "Protein: ${Formatter.formatDecimal(protein)}g",
-                style = MaterialTheme.typography.labelLarge
-            )
-        }
-
-        FormNumberField(
-            value = quantity,
-            label = stringResource(
-                R.string.quantityUnitLabel,
-                recipe.food.unit.toString().lowercase()
-            ),
-            onValueChange = onSetQuantity
-        )
     }
 }
 
@@ -215,8 +262,8 @@ private fun SelectionList(
     query: String,
     onAction: (CountAction) -> Unit
 ) {
-    Column {
-        SearchField(query = query) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        SearchField(query = query, placeholder = R.string.searchMeals) {
             onAction(CountAction.Search(it))
         }
         if (items.loadState.isIdle && items.itemCount == 0) {
@@ -294,7 +341,8 @@ private fun CountContentPreview() {
                     saturatedFats = 5.0
                 ),
                 quantity = 5.0,
-                isSelectMode = false,
+                isSelectMealMode = false,
+                isSelectDateMode = false,
                 query = ""
             ) { }
         }

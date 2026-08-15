@@ -49,8 +49,10 @@ class CountViewModel @Inject constructor(
         when (action) {
             CountAction.LaunchCamera -> this.onLaunchCamera()
             is CountAction.CodeScanned -> this.onCodeScanned(action.code)
-            CountAction.ToggleSelectMode -> this.onToggleSelectMode()
+            CountAction.ToggleSelectMealMode -> this.onToggleSelectMealMode()
+            CountAction.ToggleSelectDateMode -> this.onToggleSelectDateMode()
             is CountAction.SelectMeal -> this.onSelectMeal(action.meal)
+            is CountAction.SelectDate -> this.onSelectDate(action.date)
             is CountAction.Search -> this.onSearch(action.query)
             is CountAction.SetMealQuantity -> this.onSetMealQuantity(action.input)
             CountAction.CountMeal -> this.onCountMeal()
@@ -81,8 +83,12 @@ class CountViewModel @Inject constructor(
         }
     }
 
-    private fun onToggleSelectMode() {
-        _state.update { it.copy(isSelectMode = !it.isSelectMode) }
+    private fun onToggleSelectMealMode() {
+        _state.update { it.copy(isSelectMealMode = !it.isSelectMealMode) }
+    }
+
+    private fun onToggleSelectDateMode() {
+        _state.update { it.copy(isSelectDateMode = !it.isSelectDateMode) }
     }
 
     private fun onSelectMeal(meal: Recipe) {
@@ -94,8 +100,20 @@ class CountViewModel @Inject constructor(
                 selectedMeal = meal,
                 countedMeal = getCountedMealOfRecipe(meal, quantity),
                 quantity = quantity,
-                isSelectMode = false
+                isSelectMealMode = false
             )
+        }
+    }
+
+    private fun onSelectDate(date: Long?) {
+        _state.update { it.copy(isSelectDateMode = false) }
+
+        if (date == null) {
+            return
+        }
+
+        _state.update {
+            it.copy(countedMeal = it.countedMeal?.copy(eatenAt = date))
         }
     }
 

@@ -29,11 +29,12 @@ interface CountedMealDao {
     @Query(
         """
         SELECT * FROM counted_meal
+        WHERE name LIKE :query
         ORDER BY counted_meal.eatenAt DESC,
         counted_meal.name
         """
     )
-    fun getAll(): PagingSource<Int, CountedMealEntity>
+    fun getAll(query: String): PagingSource<Int, CountedMealEntity>
 
     @Query("DELETE FROM counted_meal WHERE counted_meal.id IN (:ids)")
     suspend fun delete(ids: Set<Int>)

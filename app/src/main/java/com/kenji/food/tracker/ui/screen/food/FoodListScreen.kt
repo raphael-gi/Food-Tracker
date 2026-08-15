@@ -62,7 +62,7 @@ fun FoodListScreen(
             CenterAlignedTopAppBar(
                 navigationIcon = { NavigationButton(onBackPressed) },
                 title = {
-                    SearchField(query = state.query) {
+                    SearchField(query = state.query, placeholder = R.string.searchFoods) {
                         viewModel.onAction(FoodListAction.Search(it))
                     }
                 },

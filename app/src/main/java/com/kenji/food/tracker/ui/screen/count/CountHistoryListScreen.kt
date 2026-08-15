@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -18,12 +20,13 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.kenji.food.tracker.R
 import com.kenji.food.tracker.entity.CountedMealEntity
-import com.kenji.food.tracker.ui.component.TopBar
 import com.kenji.food.tracker.ui.component.button.DeleteButton
 import com.kenji.food.tracker.ui.component.cell.CountedMealCell
+import com.kenji.food.tracker.ui.component.input.SearchField
 import com.kenji.food.tracker.ui.viewmodel.count.history.CountHistoryAction
 import com.kenji.food.tracker.ui.viewmodel.count.history.CountHistoryListViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CountHistoryListScreen(viewModel: CountHistoryListViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -31,8 +34,12 @@ fun CountHistoryListScreen(viewModel: CountHistoryListViewModel = hiltViewModel(
 
     Scaffold(
         topBar = {
-            TopBar(
-                title = R.string.history,
+            CenterAlignedTopAppBar(
+                title = {
+                    SearchField(query = state.query, placeholder = R.string.searchHistory) {
+                        viewModel.onAction(CountHistoryAction.Search(it))
+                    }
+                },
                 actions = {
                     AnimatedVisibility(state.selectedItems.isNotEmpty()) {
                         DeleteButton {

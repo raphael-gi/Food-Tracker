@@ -169,7 +169,8 @@ private fun UpsertRecipe(
                 ) {
                     FoodCell(
                         modifier = Modifier.weight(1f),
-                        item = recipeFood.food
+                        item = recipeFood.food,
+                        quantity = recipeFood.recipeQuantity
                     )
 
                     FormNumberField(

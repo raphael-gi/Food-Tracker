@@ -2,6 +2,8 @@ package com.kenji.food.tracker.ui.screen.recipe
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -19,6 +21,7 @@ import com.kenji.food.tracker.entity.RecipeFoodEntity
 import com.kenji.food.tracker.ui.component.FullScreenLoading
 import com.kenji.food.tracker.ui.component.button.EditButton
 import com.kenji.food.tracker.ui.component.button.NavigationButton
+import com.kenji.food.tracker.ui.component.cell.FoodCell
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
 import com.kenji.food.tracker.ui.viewmodel.recipe.detail.RecipeDetailViewModel
 
@@ -63,9 +66,11 @@ fun RecipeDetailScreen(
 
 @Composable
 private fun FoodDetailContent(modifier: Modifier = Modifier, recipe: Recipe) {
-    Column(modifier = modifier) {
+    val scrollState = rememberScrollState()
+
+    Column(modifier = modifier.verticalScroll(state = scrollState)) {
         recipe.foods.forEach { recipeFood ->
-            Text(recipeFood.food.name)
+            FoodCell(item = recipeFood.food, quantity = recipeFood.recipeQuantity)
         }
     }
 }
@@ -95,7 +100,7 @@ private fun FoodDetailPreview() {
                     unit = FoodUnit.G,
                     quantity = 100.0
                 ),
-                recipeQuantity = 0.0
+                recipeQuantity = 10.0
             )
         )
     )

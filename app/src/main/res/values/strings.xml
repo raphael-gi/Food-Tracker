@@ -10,6 +10,7 @@
 
     <string name="start">Start</string>
     <string name="finish">Finish</string>
+    <string name="ok">OK</string>
     <string name="allow">Allow</string>
     <string name="add">Add</string>
     <string name="scan">Scan</string>
@@ -31,6 +32,7 @@
 
     <string name="countMeal">Count Meal</string>
     <string name="name">Name</string>
+    <string name="totalKcal">Total %1s Kcal</string>
     <string name="calories">Calories</string>
     <string name="caloriesLabel">Calories (kcal)</string>
     <string name="calorieTargetLabel">Calorie Target (kcal)</string>
@@ -62,7 +64,10 @@
     <string name="saturdayShort">Sat</string>
     <string name="sundayShort">Sun</string>
 
-    <string name="search">Search</string>
+    <string name="searchFoods">Search Foods</string>
+    <string name="searchRecipes">Search Recipes</string>
+    <string name="searchMeals">Search Meals</string>
+    <string name="searchHistory">Search History</string>
 
     <string name="noFoods">No Foods</string>
     <string name="noRecipes">No Recipes</string>
@@ -71,4 +76,5 @@
     <string name="barcodeScanning">Barcode scanning</string>
 
     <string name="portions">Portions</string>
+    <string name="date">Date</string>
 </resources>

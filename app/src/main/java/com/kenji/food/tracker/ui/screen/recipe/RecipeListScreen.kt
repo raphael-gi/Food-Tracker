@@ -63,7 +63,7 @@ fun RecipeListScreen(
             CenterAlignedTopAppBar(
                 navigationIcon = { NavigationButton(onBackPressed) },
                 title = {
-                    SearchField(query = state.query) {
+                    SearchField(query = state.query, placeholder = R.string.searchRecipes) {
                         viewModel.onAction(RecipeListAction.Search(it))
                     }
                 },

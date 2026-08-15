@@ -17,10 +17,15 @@ import com.kenji.food.tracker.entity.FoodEntity
 import com.kenji.food.tracker.entity.FoodUnit
 import com.kenji.food.tracker.ui.component.Tag
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
+import com.kenji.food.tracker.ui.theme.carbs
+import com.kenji.food.tracker.ui.theme.fats
+import com.kenji.food.tracker.ui.theme.protein
+import com.kenji.food.tracker.ui.theme.saturatedFats
+import com.kenji.food.tracker.ui.theme.sugar
 import com.kenji.food.tracker.util.Formatter
 
 @Composable
-fun FoodCell(modifier: Modifier = Modifier, item: FoodEntity) {
+fun FoodCell(modifier: Modifier = Modifier, item: FoodEntity, quantity: Double? = null) {
     Column(
         modifier = modifier.padding(10.dp)
     ) {
@@ -30,29 +35,54 @@ fun FoodCell(modifier: Modifier = Modifier, item: FoodEntity) {
                 style = MaterialTheme.typography.titleMedium
             )
             Text(
-                text = "${Formatter.formatDecimal(item.quantity)}${item.unit.name.lowercase()}",
+                text = "${Formatter.formatDecimal(quantity ?: item.quantity)}${item.unit.name.lowercase()}",
                 style = MaterialTheme.typography.labelMedium
             )
         }
-        FoodTags(item)
+        FoodTags(item, quantity)
     }
 }
 
 @Composable
-private fun FoodTags(item: FoodEntity) {
+private fun FoodTags(item: FoodEntity, quantity: Double? = null) {
+    val multiplier = quantity?.div(item.quantity) ?: 1.0
+
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(5.dp),
         verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
-        Tag(text = item.calories.toString())
-        item.carbs?.let {
-            Tag(text = Formatter.formatDecimal(it))
+        item.calories?.let {
+            Tag(text = (Formatter.formatDecimal(it.times(multiplier))))
         }
         item.protein?.let {
-            Tag(text = Formatter.formatDecimal(it))
+            Tag(
+                text = Formatter.formatDecimal(it.times(multiplier)),
+                color = MaterialTheme.colorScheme.protein
+            )
+        }
+        item.carbs?.let {
+            Tag(
+                text = Formatter.formatDecimal(it.times(multiplier)),
+                color = MaterialTheme.colorScheme.carbs
+            )
+        }
+        item.sugar?.let {
+            Tag(
+                text = Formatter.formatDecimal(it.times(multiplier)),
+                color = MaterialTheme.colorScheme.sugar
+            )
         }
         item.fats?.let {
-            Tag(text = Formatter.formatDecimal(it))
+            Tag(
+                text = Formatter.formatDecimal(it.times(multiplier)),
+                color = MaterialTheme.colorScheme.fats
+            )
+        }
+        item.saturatedFats?.let {
+            Tag(
+                text = Formatter.formatDecimal(it.times(multiplier)),
+                color = MaterialTheme.colorScheme.saturatedFats
+            )
         }
     }
 }
