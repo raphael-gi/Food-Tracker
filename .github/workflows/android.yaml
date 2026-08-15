@@ -21,7 +21,7 @@ jobs:
       - name: Get version name
         run: |
           chmod +x gradlew
-          VERSION_NAME=$(./gradlew -q :app:printVersionName)
+          VERSION_NAME=$(./gradlew -q :app:versionName)
           echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
 
       - name: Build signed APK
