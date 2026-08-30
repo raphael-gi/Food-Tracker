@@ -135,12 +135,14 @@ private fun UpsertFood(
         FormNumberField(
             value = fats,
             label = R.string.fat,
+            iconRes = R.drawable.fat,
             onValueChange = { onAction(UpsertFoodAction.SetFats(it)) }
         )
 
         FormNumberField(
             value = saturatedFats,
             label = R.string.saturatedFat,
+            iconRes = R.drawable.saturated_fat,
             onValueChange = { onAction(UpsertFoodAction.SetSaturatedFats(it)) }
         )
 
@@ -161,6 +163,7 @@ private fun UpsertFood(
         FormNumberField(
             value = protein,
             label = R.string.protein,
+            iconRes = R.drawable.protein,
             onValueChange = { onAction(UpsertFoodAction.SetProteins(it)) }
         )
 

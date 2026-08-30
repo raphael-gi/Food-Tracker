@@ -262,7 +262,11 @@ private fun SelectionList(
     onAction: (CountAction) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        SearchField(query = query, placeholder = R.string.searchMeals) {
+        SearchField(
+            modifier = Modifier.padding(10.dp),
+            query = query,
+            placeholder = R.string.searchMeals
+        ) {
             onAction(CountAction.Search(it))
         }
         if (items.loadState.isIdle && items.itemCount == 0) {

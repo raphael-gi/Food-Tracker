@@ -41,7 +41,7 @@ class CountViewModel @Inject constructor(
         .flatMapLatest { query ->
             Pager(
                 config = PagingConfig(pageSize = 5),
-                pagingSourceFactory = { foodDao.getAll("%${query}%") }
+                pagingSourceFactory = { foodDao.getAll("%$query%") }
             ).flow
         }.cachedIn(viewModelScope)
 

@@ -77,4 +77,6 @@
 
     <string name="portions">Portions</string>
     <string name="date">Date</string>
+
+    <string name="completeSetupMessage">Complete the setup of the Food Tracker app first</string>
 </resources>

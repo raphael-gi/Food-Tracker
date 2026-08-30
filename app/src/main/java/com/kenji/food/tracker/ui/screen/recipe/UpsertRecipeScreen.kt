@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -52,6 +54,7 @@ import com.kenji.food.tracker.ui.component.cell.FoodCell
 import com.kenji.food.tracker.ui.component.info.NoData
 import com.kenji.food.tracker.ui.component.input.FormNumberField
 import com.kenji.food.tracker.ui.component.input.FormTextField
+import com.kenji.food.tracker.ui.component.input.SearchField
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
 import com.kenji.food.tracker.ui.viewmodel.recipe.add.UpsertRecipeAction
 import com.kenji.food.tracker.ui.viewmodel.recipe.add.UpsertRecipeEffect
@@ -95,6 +98,7 @@ fun UpsertRecipeScreen(
                 portions = state.portions,
                 isSelectionMode = state.isSelectMode,
                 selectedFoods = state.selectedFoods,
+                query = state.query,
                 isCreate = state.isCreate,
                 onAction = viewModel::onAction
             )
@@ -110,6 +114,7 @@ private fun UpsertRecipe(
     portions: Double?,
     isSelectionMode: Boolean,
     selectedFoods: Map<Int, RecipeFoodEntity>,
+    query: String,
     isCreate: Boolean,
     onAction: (UpsertRecipeAction) -> Unit
 ) {
@@ -208,7 +213,7 @@ private fun UpsertRecipe(
     }
 
     if (isSelectionMode) {
-        FoodSelection(foods, selectedFoods, onAction)
+        FoodSelection(foods, selectedFoods, query, onAction)
     }
 }
 
@@ -217,6 +222,7 @@ private fun UpsertRecipe(
 private fun FoodSelection(
     foods: LazyPagingItems<FoodEntity>,
     selectedFoods: Map<Int, RecipeFoodEntity>,
+    query: String,
     onAction: (UpsertRecipeAction) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -226,9 +232,12 @@ private fun FoodSelection(
         sheetState = sheetState
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            FoodSelectionList(foods, selectedFoods.keys) {
-                onAction(UpsertRecipeAction.ToggleSelection(it))
-            }
+            FoodSelectionList(
+                items = foods,
+                query = query,
+                selectedFoods = selectedFoods.keys,
+                onAction = onAction
+            )
         }
     }
 }
@@ -236,25 +245,35 @@ private fun FoodSelection(
 @Composable
 private fun FoodSelectionList(
     items: LazyPagingItems<FoodEntity>,
+    query: String,
     selectedFoods: Set<Int>,
-    onToggleSelection: (FoodEntity) -> Unit
+    onAction: (UpsertRecipeAction) -> Unit
 ) {
-    if (items.loadState.isIdle && items.itemCount == 0) {
-        NoData(
-            icon = R.drawable.food,
-            iconDescription = R.string.food,
-            text = R.string.noFoods
-        )
-    } else {
-        LazyColumn {
-            items(count = items.itemCount, key = items.itemKey { it.id }) { index ->
-                val item = items[index]
-                if (item != null) {
-                    FoodSelectionCell(item, selectedFoods) {
-                        onToggleSelection(item)
+    Column(modifier = Modifier.fillMaxSize()) {
+        SearchField(
+            modifier = Modifier.padding(10.dp),
+            query = query,
+            placeholder = R.string.searchMeals
+        ) {
+            onAction(UpsertRecipeAction.Search(it))
+        }
+        if (items.loadState.isIdle && items.itemCount == 0) {
+            NoData(
+                icon = R.drawable.food,
+                iconDescription = R.string.food,
+                text = R.string.noFoods
+            )
+        } else {
+            LazyColumn {
+                items(count = items.itemCount, key = items.itemKey { it.id }) { index ->
+                    val item = items[index]
+                    if (item != null) {
+                        FoodSelectionCell(item, selectedFoods) {
+                            onAction(UpsertRecipeAction.ToggleSelection(item))
+                        }
+                    } else {
+                        Text("Unavailable")
                     }
-                } else {
-                    Text("Unavailable")
                 }
             }
         }
@@ -267,8 +286,16 @@ private fun FoodSelectionCell(
     selectedFoods: Set<Int>,
     toggleSelection: () -> Unit
 ) {
+    val background = if (item.id in selectedFoods) {
+        MaterialTheme.colorScheme.secondaryContainer
+    } else {
+        Color.Transparent
+    }
+
     Row(
-        modifier = Modifier.clickable { toggleSelection() },
+        modifier = Modifier
+            .background(background)
+            .clickable { toggleSelection() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(
@@ -309,6 +336,7 @@ private fun UpsertRecipePreview() {
                         recipeQuantity = 10.0
                     )
                 ),
+                query = "",
                 isCreate = false,
                 onAction = {}
             )

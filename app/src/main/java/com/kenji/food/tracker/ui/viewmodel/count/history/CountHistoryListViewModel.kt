@@ -31,7 +31,7 @@ class CountHistoryListViewModel @Inject constructor(
         .flatMapLatest { query ->
             Pager(
                 config = PagingConfig(pageSize = 5),
-                pagingSourceFactory = { countedMealDao.getAll("%${query}%") }
+                pagingSourceFactory = { countedMealDao.getAll("%$query%") }
             ).flow
         }.cachedIn(viewModelScope)
 

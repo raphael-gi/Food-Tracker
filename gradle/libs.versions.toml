@@ -1,25 +1,26 @@
 [versions]
-agp = "9.3.1"
+agp = "9.3.2"
 coreKtx = "1.19.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
 lifecycleRuntimeKtx = "2.11.0"
 activityCompose = "1.13.0"
 kotlin = "2.4.10"
-composeBom = "2026.06.01"
+composeBom = "2026.08.00"
 roomVersion = "2.8.4"
 ksp = "2.3.11"
-paging = "3.5.0"
+paging = "3.5.1"
 daggerHilt = "2.60.1"
 daggerHiltComposeNavigation = "1.4.0"
-navigation3 = "1.2.0-alpha07"
+navigation3 = "1.2.0-beta01"
 lifecycleViewmodelNav3 = "2.11.0"
 kotlinSerialization = "2.4.10"
 kotlinxSerializationCore = "1.11.0"
-vico = "3.2.3"
-cameraX = "1.7.0-alpha02"
-cameraMlkitVision = "1.6.1"
+vico = "3.3.0"
+cameraX = "1.7.0-alpha03"
+cameraMlkitVision = "1.6.2"
 playServicesMlkitBarcodeScanning = "18.3.1"
+glance = "1.2.0"
 
 [libraries]
 androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
@@ -48,6 +49,8 @@ vico-compose-m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", ve
 androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "cameraX" }
 androidx-camera-mlkit-vision = { group = "androidx.camera", name = "camera-mlkit-vision", version.ref = "cameraMlkitVision" }
 play-services-mlkit-barcode-scanning = { group = "com.google.android.gms", name = "play-services-mlkit-barcode-scanning", version.ref = "playServicesMlkitBarcodeScanning" }
+androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
+androidx-glance-material3 = { group = "androidx.glance", name = "glance-material3", version.ref = "glance" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
