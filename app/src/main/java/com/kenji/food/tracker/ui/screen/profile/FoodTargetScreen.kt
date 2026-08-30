@@ -73,9 +73,12 @@ fun FoodTargetContent(
             iconRes = R.drawable.calories,
             onValueChange = { onAction(FoodTargetAction.SetCalories(it)) }
         )
-        FormNumberField(value = proteins, label = R.string.proteinLabel) {
-            onAction(FoodTargetAction.SetProteins(it))
-        }
+        FormNumberField(
+            value = proteins,
+            label = R.string.proteinLabel,
+            iconRes = R.drawable.protein,
+            onValueChange = { onAction(FoodTargetAction.SetProteins(it)) }
+        )
         FormNumberField(
             value = sugar,
             label = R.string.sugarLabel,

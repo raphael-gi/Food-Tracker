@@ -14,13 +14,20 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel(assistedFactory = UpsertRecipeViewModel.Factory::class)
 class UpsertRecipeViewModel @AssistedInject constructor(
     private val foodDao: FoodDao,
@@ -34,10 +41,15 @@ class UpsertRecipeViewModel @AssistedInject constructor(
     )
     val state = _state.asStateFlow()
 
-    val foods = Pager(
-        config = PagingConfig(pageSize = 5),
-        pagingSourceFactory = { foodDao.getAllFoods("%") }
-    ).flow.cachedIn(viewModelScope)
+    val foods = state
+        .map { it.query }
+        .distinctUntilChanged()
+        .flatMapLatest { query ->
+            Pager(
+                config = PagingConfig(pageSize = 5),
+                pagingSourceFactory = { foodDao.getAllFoods("%$query%") }
+            ).flow
+        }.cachedIn(viewModelScope)
 
     private val _effect = Channel<UpsertRecipeEffect>()
     val effect = _effect.receiveAsFlow()
@@ -76,8 +88,8 @@ class UpsertRecipeViewModel @AssistedInject constructor(
                 action.input
             )
 
+            is UpsertRecipeAction.Search -> this.onSearch(action.query)
             is UpsertRecipeAction.SetPortions -> this.onSetPortions(action.input)
-
             UpsertRecipeAction.Create -> this.onCreate()
         }
     }
@@ -153,6 +165,10 @@ class UpsertRecipeViewModel @AssistedInject constructor(
 
             it.copy(selectedFoods = newRecipeFoods)
         }
+    }
+
+    private fun onSearch(query: String) {
+        _state.update { it.copy(query = query) }
     }
 
     private fun onSetPortions(input: String) {
