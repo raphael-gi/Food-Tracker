@@ -5,12 +5,19 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchField(query: String, @StringRes placeholder: Int, onSearch: (String) -> Unit) {
+fun SearchField(
+    modifier: Modifier = Modifier,
+    query: String,
+    @StringRes placeholder: Int,
+    onSearch: (String) -> Unit
+) {
     SearchBarDefaults.InputField(
+        modifier = modifier,
         query = query,
         placeholder = { Text(stringResource(placeholder)) },
         onQueryChange = onSearch,

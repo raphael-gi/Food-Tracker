@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -249,7 +250,11 @@ private fun FoodSelectionList(
     onAction: (UpsertRecipeAction) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        SearchField(query = query, placeholder = R.string.searchMeals) {
+        SearchField(
+            modifier = Modifier.padding(10.dp),
+            query = query,
+            placeholder = R.string.searchMeals
+        ) {
             onAction(UpsertRecipeAction.Search(it))
         }
         if (items.loadState.isIdle && items.itemCount == 0) {
@@ -281,8 +286,16 @@ private fun FoodSelectionCell(
     selectedFoods: Set<Int>,
     toggleSelection: () -> Unit
 ) {
+    val background = if (item.id in selectedFoods) {
+        MaterialTheme.colorScheme.secondaryContainer
+    } else {
+        Color.Transparent
+    }
+
     Row(
-        modifier = Modifier.clickable { toggleSelection() },
+        modifier = Modifier
+            .background(background)
+            .clickable { toggleSelection() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(

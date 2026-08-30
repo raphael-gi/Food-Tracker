@@ -90,7 +90,6 @@ fun FoodListScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FoodList(
     modifier: Modifier = Modifier,
