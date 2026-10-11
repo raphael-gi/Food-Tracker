@@ -93,8 +93,8 @@ class UpsertFoodViewModel @AssistedInject constructor(
     }
 
     private fun onSetSaturatedFats(input: String) {
-        val fats = input.toDoubleOrNull()
-        _state.update { it.copy(fats = fats) }
+        val saturatedFats = input.toDoubleOrNull()
+        _state.update { it.copy(saturatedFats = saturatedFats) }
     }
 
     private fun onSetCarbs(input: String) {
