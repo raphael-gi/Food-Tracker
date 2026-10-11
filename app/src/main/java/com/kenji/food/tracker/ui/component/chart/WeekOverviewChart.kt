@@ -27,7 +27,12 @@ import com.patrykandpatrick.vico.compose.cartesian.data.columnModel
 import com.patrykandpatrick.vico.compose.cartesian.decoration.HorizontalLine
 import com.patrykandpatrick.vico.compose.cartesian.layer.ColumnCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarker
+import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarkerController
+import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarkerVisibilityListener
+import com.patrykandpatrick.vico.compose.cartesian.marker.Interaction
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
+import com.patrykandpatrick.vico.compose.cartesian.rememberVicoScrollState
 import com.patrykandpatrick.vico.compose.common.Fill
 import com.patrykandpatrick.vico.compose.common.component.LineComponent
 import com.patrykandpatrick.vico.compose.common.component.rememberLineComponent
@@ -39,7 +44,8 @@ fun WeekOverviewChart(
     getKey: (FoodPerDay) -> Int,
     @StringRes title: Int,
     currentTarget: Int,
-    valuePadding: Int
+    valuePadding: Int,
+    onSelectDay: (Long) -> Unit
 ) {
     val modelProducer = remember { CartesianChartModelProducer() }
 
@@ -50,7 +56,7 @@ fun WeekOverviewChart(
     }
 
     val labels = foodPerDay.map { perDay ->
-        val dayRes = getShortDayOfWeek(perDay.day)
+        val dayRes = getShortDayOfWeek(perDay.dayOfWeek)
         if (dayRes != null) stringResource(dayRes)
         else ""
     }
@@ -70,6 +76,7 @@ fun WeekOverviewChart(
 
         CartesianChartHost(
             modifier = Modifier.fillMaxSize(),
+            scrollState = rememberVicoScrollState(scrollEnabled = false),
             chart = rememberCartesianChart(
                 rememberColumnCartesianLayer(
                     columnProvider = remember {
@@ -98,6 +105,26 @@ fun WeekOverviewChart(
                         )
                     }
                 ),
+                marker = object : CartesianMarker {},
+                markerController = object : CartesianMarkerController {
+                    override fun shouldShowMarker(
+                        interaction: Interaction,
+                        targets: List<CartesianMarker.Target>
+                    ): Boolean {
+                        return interaction is Interaction.LongPress
+                    }
+                },
+                markerVisibilityListener = object : CartesianMarkerVisibilityListener {
+                    override fun onShown(
+                        marker: CartesianMarker,
+                        targets: List<CartesianMarker.Target>
+                    ) {
+                        val first = targets.firstOrNull() ?: return
+                        val index = first.x.toInt()
+
+                        onSelectDay(foodPerDay[index].day)
+                    }
+                },
                 startAxis = VerticalAxis.rememberStart(),
                 bottomAxis = HorizontalAxis.rememberBottom(
                     valueFormatter = { _, i, _ ->

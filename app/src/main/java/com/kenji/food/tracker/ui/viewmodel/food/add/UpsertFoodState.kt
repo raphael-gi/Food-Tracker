@@ -1,5 +1,6 @@
 package com.kenji.food.tracker.ui.viewmodel.food.add
 
+import com.kenji.food.tracker.entity.FoodCategory
 import com.kenji.food.tracker.entity.FoodUnit
 
 data class UpsertFoodState(
@@ -11,6 +12,7 @@ data class UpsertFoodState(
     val sugar: Double? = null,
     val proteins: Double? = null,
     val unit: FoodUnit? = FoodUnit.G,
+    val category: FoodCategory? = null,
     val quantity: Double? = 100.0,
     val code: String? = null,
     val isCreate: Boolean,
@@ -26,6 +28,7 @@ sealed interface UpsertFoodAction {
     data class SetProteins(val input: String) : UpsertFoodAction
     data class SetSugar(val input: String) : UpsertFoodAction
     data class SetFoodUnit(val input: FoodUnit) : UpsertFoodAction
+    data class SetFoodCategory(val input: FoodCategory) : UpsertFoodAction
     data class SetQuantity(val input: String) : UpsertFoodAction
     data class SetCode(val code: String) : UpsertFoodAction
     data object RemoveCode : UpsertFoodAction

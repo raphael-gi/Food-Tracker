@@ -3,6 +3,7 @@ package com.kenji.food.tracker.ui.viewmodel.food.add
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kenji.food.tracker.db.dao.FoodDao
+import com.kenji.food.tracker.entity.FoodCategory
 import com.kenji.food.tracker.entity.FoodEntity
 import com.kenji.food.tracker.entity.FoodUnit
 import dagger.assisted.Assisted
@@ -69,6 +70,7 @@ class UpsertFoodViewModel @AssistedInject constructor(
             is UpsertFoodAction.SetSugar -> this.onSetSugar(action.input)
             is UpsertFoodAction.SetProteins -> this.onSetProtein(action.input)
             is UpsertFoodAction.SetFoodUnit -> this.onSetFoodUnit(action.input)
+            is UpsertFoodAction.SetFoodCategory -> this.onSetFoodCategory(action.input)
             is UpsertFoodAction.SetQuantity -> this.onSetQuantity(action.input)
             is UpsertFoodAction.SetCode -> this.onSetCode(action.code)
             UpsertFoodAction.RemoveCode -> this.onRemoveCode()
@@ -119,6 +121,15 @@ class UpsertFoodViewModel @AssistedInject constructor(
         }
     }
 
+    private fun onSetFoodCategory(input: FoodCategory) {
+        _state.update {
+            val foodCategory = if (it.category == input) null
+            else input
+
+            it.copy(category = foodCategory)
+        }
+    }
+
     private fun onSetQuantity(input: String) {
         val quantity = input.toDoubleOrNull()
         _state.update { it.copy(quantity = quantity) }
@@ -141,6 +152,7 @@ class UpsertFoodViewModel @AssistedInject constructor(
         val proteins = state.value.proteins
         val sugar = state.value.sugar
         val unit = state.value.unit ?: return
+        val category = state.value.category
         val quantity = state.value.quantity ?: return
         val code = state.value.code
 
@@ -155,6 +167,7 @@ class UpsertFoodViewModel @AssistedInject constructor(
             protein = proteins,
             isRecipe = false,
             unit = unit,
+            category = category,
             code = code,
             quantity = quantity,
         )

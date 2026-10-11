@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.result.ResultEffect
 import com.kenji.food.tracker.R
+import com.kenji.food.tracker.entity.FoodCategory
 import com.kenji.food.tracker.entity.FoodUnit
 import com.kenji.food.tracker.ui.component.BarcodeScannedInfo
 import com.kenji.food.tracker.ui.component.FullScreenLoading
@@ -76,6 +77,7 @@ fun UpsertFoodScreen(
                 sugar = state.sugar,
                 protein = state.proteins,
                 foodUnit = state.unit,
+                foodCategory = state.category,
                 quantity = state.quantity,
                 code = state.code,
                 isCreate = state.isCreate,
@@ -96,6 +98,7 @@ private fun UpsertFood(
     sugar: Double?,
     protein: Double?,
     foodUnit: FoodUnit?,
+    foodCategory: FoodCategory?,
     quantity: Double?,
     code: String?,
     isCreate: Boolean,
@@ -167,6 +170,16 @@ private fun UpsertFood(
             onValueChange = { onAction(UpsertFoodAction.SetProteins(it)) }
         )
 
+        Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+            FoodCategory.entries.forEach { category ->
+                InputChip(
+                    selected = category == foodCategory,
+                    label = { Text(text = category.name.lowercase()) },
+                    onClick = { onAction(UpsertFoodAction.SetFoodCategory(category)) }
+                )
+            }
+        }
+
         Row {
             FoodUnit.entries.forEach { unit ->
                 InputChip(
@@ -215,6 +228,7 @@ private fun UpsertFoodPreview() {
                 5.0,
                 10.0,
                 FoodUnit.G,
+                foodCategory = null,
                 5.0,
                 code = "",
                 isCreate = true

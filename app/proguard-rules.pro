@@ -20,5 +20,13 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
--keep class androidx.camera.** { *; }
--keep class com.google.mlkit.** { *; }
+-keep class com.google.mlkit.common.internal.CommonComponentRegistrar {
+    <init>();
+}
+-keep class com.google.mlkit.vision.barcode.internal.BarcodeRegistrar {
+    <init>();
+}
+-keep class com.google.mlkit.vision.common.internal.VisionCommonRegistrar {
+    <init>();
+}
+-keep class androidx.work.OverwritingInputMerger { *; }

@@ -12,7 +12,6 @@ import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.LocalContext
 import androidx.glance.appwidget.LinearProgressIndicator
-import androidx.glance.appwidget.appWidgetBackground
 import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
