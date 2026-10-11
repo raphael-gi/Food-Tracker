@@ -12,9 +12,12 @@ import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -24,11 +27,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kenji.food.tracker.R
+import com.kenji.food.tracker.entity.CountedMealEntity
 import com.kenji.food.tracker.entity.FoodPerDay
 import com.kenji.food.tracker.entity.FoodTargetEntity
 import com.kenji.food.tracker.ui.Route
+import com.kenji.food.tracker.ui.component.FoodPerDayOverview
 import com.kenji.food.tracker.ui.component.chart.WeekOverviewChart
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
+import com.kenji.food.tracker.ui.viewmodel.HomeAction
 import com.kenji.food.tracker.ui.viewmodel.HomeViewModel
 
 private val SPACING = 10.dp
@@ -40,15 +46,20 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel(), onNavigate: (Route) -
     HomeContent(
         foodPerDay = state.foodPerDays,
         currentTarget = state.currentTarget,
-        onNavigate = onNavigate
+        selectedDayMeals = state.selectedDay,
+        onNavigate = onNavigate,
+        onAction = viewModel::onAction
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeContent(
     foodPerDay: List<FoodPerDay>,
     currentTarget: FoodTargetEntity?,
-    onNavigate: (Route) -> Unit
+    selectedDayMeals: List<CountedMealEntity>?,
+    onNavigate: (Route) -> Unit,
+    onAction: (HomeAction) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -66,7 +77,9 @@ private fun HomeContent(
                             title = R.string.calories,
                             currentTarget = target.calories,
                             valuePadding = 200
-                        )
+                        ) { day ->
+                            onAction(HomeAction.SelectDay(day))
+                        }
                     })
                     if (target.protein != null) {
                         add(@Composable {
@@ -76,7 +89,9 @@ private fun HomeContent(
                                 title = R.string.protein,
                                 currentTarget = target.protein,
                                 valuePadding = 20
-                            )
+                            ) { day ->
+                                onAction(HomeAction.SelectDay(day))
+                            }
                         })
                     }
                     if (target.sugar != null) {
@@ -87,7 +102,9 @@ private fun HomeContent(
                                 title = R.string.sugar,
                                 currentTarget = target.sugar,
                                 valuePadding = 10
-                            )
+                            ) { day ->
+                                onAction(HomeAction.SelectDay(day))
+                            }
                         })
                     }
                 }
@@ -106,6 +123,16 @@ private fun HomeContent(
                     items[pageIndex]()
                 }
 
+                selectedDayMeals?.let {
+                    val sheetState = rememberModalBottomSheetState()
+
+                    ModalBottomSheet(
+                        sheetState = sheetState,
+                        onDismissRequest = { onAction(HomeAction.CloseOverlay) }
+                    ) {
+                        FoodPerDayOverview(selectedDayMeals, target)
+                    }
+                }
             }
         }
 
@@ -164,7 +191,11 @@ private fun HomeScreenPreview() {
 
     FoodTrackerTheme {
         Surface {
-            HomeContent(foodPerDay = emptyList(), currentTarget = target) { }
+            HomeContent(
+                foodPerDay = emptyList(),
+                currentTarget = target,
+                selectedDayMeals = null,
+                onNavigate = {}) { }
         }
     }
 }

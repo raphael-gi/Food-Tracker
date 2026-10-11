@@ -49,12 +49,20 @@ interface CountedMealDao {
 
     @Query(
         """
-        SELECT (CAST(strftime('%w', DATE(eatenAt / 1000, 'unixepoch')) AS INTEGER) + 6) % 7 AS day, SUM(calories) AS calories, SUM(protein) AS protein, SUM(sugar) as sugar
+        SELECT eatenAt as day, (CAST(strftime('%w', DATE(eatenAt / 1000, 'unixepoch')) AS INTEGER) + 6) % 7 AS dayOfWeek, SUM(calories) AS calories, SUM(protein) AS protein, SUM(sugar) as sugar
         FROM counted_meal
         WHERE DATE(eatenAt / 1000, 'unixepoch') > DATE(strftime('%s', 'now', '-7 days'), 'unixepoch')
-        AND (CAST(strftime('%w', DATE(eatenAt / 1000, 'unixepoch')) AS INTEGER) + 6) % 7 <= (CAST(strftime('%w', DATE(strftime('%s', 'now', '-7 days'), 'unixepoch')) AS INTEGER) + 6) % 7
-        GROUP BY strftime("%w", DATE(eatenAt / 1000, 'unixepoch'))
+        AND dayOfWeek <= (CAST(strftime('%w', DATE(strftime('%s', 'now', '-7 days'), 'unixepoch')) AS INTEGER) + 6) % 7
+        GROUP BY dayOfWeek
     """
     )
     fun getCaloriesPerDayThisWeek(): Flow<List<FoodPerDay>>
+
+    @Query(
+        """
+        SELECT * FROM counted_meal
+        WHERE eatenAt / 1000 / 60 / 60 / 24 = :day
+        """
+    )
+    suspend fun getDay(day: Long): List<CountedMealEntity>
 }

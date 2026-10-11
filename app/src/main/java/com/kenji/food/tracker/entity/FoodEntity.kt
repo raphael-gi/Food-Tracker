@@ -17,6 +17,7 @@ data class FoodEntity(
     val quantity: Double,
     val isRecipe: Boolean,
     val unit: FoodUnit,
+    val category: FoodCategory? = null,
     val lastUsed: Long? = Instant.now().toEpochMilli(),
     val code: String? = null
 )

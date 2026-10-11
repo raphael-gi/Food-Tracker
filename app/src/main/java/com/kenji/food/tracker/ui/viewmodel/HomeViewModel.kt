@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    countedMealDao: CountedMealDao,
+    private val countedMealDao: CountedMealDao,
     profileDao: ProfileDao
 ) : ViewModel() {
     private val _state = MutableStateFlow(HomeState())
@@ -23,28 +23,14 @@ class HomeViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             launch {
-                countedMealDao.getToday().collect { today ->
-                    _state.update {
-                        it.copy(
-                            caloriesEatenToday = today.fold(0) { acc, entry ->
-                                acc + (entry.calories ?: 0)
-                            }
-                        )
-                    }
-                }
-            }
-
-            launch {
                 countedMealDao.getCaloriesPerDayThisWeek().collect { foodPerDay ->
-                    val food = foodPerDay.toMutableList()
-                    for (i in 0..6) {
-                        if (food.getOrNull(i)?.day != i) {
-                            food.add(i, FoodPerDay(i, 0, 0, 0))
-                        }
+                    val foods = Array(7) { FoodPerDay(0, it, 0, 0, 0) }
+                    foodPerDay.forEach {
+                        foods[it.dayOfWeek] = it
                     }
 
                     _state.update {
-                        it.copy(foodPerDays = food)
+                        it.copy(foodPerDays = foods.toList())
                     }
                 }
             }
@@ -55,5 +41,24 @@ class HomeViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun onAction(action: HomeAction) {
+        when (action) {
+            is HomeAction.SelectDay -> this.onSelectDay(action.day)
+            HomeAction.CloseOverlay -> this.onCloseOverlay()
+        }
+    }
+
+    private fun onSelectDay(time: Long) {
+        viewModelScope.launch {
+            val day = time / 1000 / 60 / 60 / 24
+            val countedMealsInDay = countedMealDao.getDay(day)
+            _state.update { it.copy(selectedDay = countedMealsInDay) }
+        }
+    }
+
+    private fun onCloseOverlay() {
+        _state.update { it.copy(selectedDay = null) }
     }
 }
