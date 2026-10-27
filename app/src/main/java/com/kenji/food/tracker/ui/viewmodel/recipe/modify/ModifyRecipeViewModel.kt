@@ -1,4 +1,4 @@
-package com.kenji.food.tracker.ui.viewmodel.recipe.add
+package com.kenji.food.tracker.ui.viewmodel.recipe.modify
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,6 +10,7 @@ import com.kenji.food.tracker.entity.FoodEntity
 import com.kenji.food.tracker.entity.FoodUnit
 import com.kenji.food.tracker.entity.Recipe
 import com.kenji.food.tracker.entity.RecipeFoodEntity
+import com.kenji.food.tracker.util.ModifyMode
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -17,28 +18,21 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@HiltViewModel(assistedFactory = UpsertRecipeViewModel.Factory::class)
-class UpsertRecipeViewModel @AssistedInject constructor(
+@HiltViewModel(assistedFactory = ModifyRecipeViewModel.Factory::class)
+class ModifyRecipeViewModel @AssistedInject constructor(
     private val foodDao: FoodDao,
-    @Assisted private val id: Int?
+    @Assisted private val mode: ModifyMode
 ) : ViewModel() {
-    private val _state = MutableStateFlow(
-        UpsertRecipeState(
-            isCreate = id == null,
-            isLoading = id != null
-        )
-    )
+    private val _state = MutableStateFlow(ModifyRecipeState(mode = mode))
     val state = _state.asStateFlow()
 
     val foods = state
@@ -51,18 +45,18 @@ class UpsertRecipeViewModel @AssistedInject constructor(
             ).flow
         }.cachedIn(viewModelScope)
 
-    private val _effect = Channel<UpsertRecipeEffect>()
+    private val _effect = Channel<ModifyRecipeEffect>()
     val effect = _effect.receiveAsFlow()
 
     @AssistedFactory
     interface Factory {
-        fun create(id: Int? = null): UpsertRecipeViewModel
+        fun create(mode: ModifyMode): ModifyRecipeViewModel
     }
 
     init {
-        if (id != null) {
+        if (mode is ModifyMode.Edit) {
             viewModelScope.launch {
-                foodDao.getRecipeById(id).collect { recipe ->
+                foodDao.getRecipeById(mode.id).collect { recipe ->
                     _state.update {
                         it.copy(
                             name = recipe.food.name,
@@ -76,21 +70,21 @@ class UpsertRecipeViewModel @AssistedInject constructor(
         }
     }
 
-    fun onAction(action: UpsertRecipeAction) {
+    fun onAction(action: ModifyRecipeAction) {
         when (action) {
-            is UpsertRecipeAction.SetName -> this.onSetName(action.name)
-            UpsertRecipeAction.ToggleSelectMode -> this.onToggleSelectMode()
-            UpsertRecipeAction.LaunchCamera -> this.onLaunchCamera()
-            is UpsertRecipeAction.CodeScanned -> this.onCodeScanned(action.code)
-            is UpsertRecipeAction.ToggleSelection -> this.onToggleSelection(action.food)
-            is UpsertRecipeAction.SetRecipeFoodQuantity -> this.onSetRecipeQuantity(
+            is ModifyRecipeAction.SetName -> this.onSetName(action.name)
+            ModifyRecipeAction.ToggleSelectMode -> this.onToggleSelectMode()
+            ModifyRecipeAction.LaunchCamera -> this.onLaunchCamera()
+            is ModifyRecipeAction.CodeScanned -> this.onCodeScanned(action.code)
+            is ModifyRecipeAction.ToggleSelection -> this.onToggleSelection(action.food)
+            is ModifyRecipeAction.SetRecipeFoodQuantity -> this.onSetRecipeQuantity(
                 action.food,
                 action.input
             )
 
-            is UpsertRecipeAction.Search -> this.onSearch(action.query)
-            is UpsertRecipeAction.SetPortions -> this.onSetPortions(action.input)
-            UpsertRecipeAction.Create -> this.onCreate()
+            is ModifyRecipeAction.Search -> this.onSearch(action.query)
+            is ModifyRecipeAction.SetPortions -> this.onSetPortions(action.input)
+            ModifyRecipeAction.Create -> this.onCreate()
         }
     }
 
@@ -104,7 +98,7 @@ class UpsertRecipeViewModel @AssistedInject constructor(
 
     private fun onLaunchCamera() {
         viewModelScope.launch {
-            _effect.send(UpsertRecipeEffect.LaunchCamera)
+            _effect.send(ModifyRecipeEffect.LaunchCamera)
         }
     }
 
@@ -113,7 +107,7 @@ class UpsertRecipeViewModel @AssistedInject constructor(
             val scannedFood = foodDao.getFoodByCode(code)
 
             when (scannedFood.size) {
-                0 -> _effect.send(UpsertRecipeEffect.ScanNotFound)
+                0 -> _effect.send(ModifyRecipeEffect.ScanNotFound)
                 1 -> {
                     val food = scannedFood.first()
 
@@ -180,8 +174,13 @@ class UpsertRecipeViewModel @AssistedInject constructor(
         val name = state.value.name.ifEmpty { return }
         val portion = state.value.portions ?: return
 
+        val id = when (mode) {
+            is ModifyMode.Edit -> mode.id
+            is ModifyMode.Create -> 0
+        }
+
         val entity = FoodEntity(
-            id = id ?: 0,
+            id = id,
             name = name,
             calories = null,
             protein = null,
@@ -197,7 +196,7 @@ class UpsertRecipeViewModel @AssistedInject constructor(
 
         viewModelScope.launch {
             foodDao.upsertRecipe(recipe)
-            _effect.send(UpsertRecipeEffect.NavBack)
+            _effect.send(ModifyRecipeEffect.NavBack)
         }
     }
 }

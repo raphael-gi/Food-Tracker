@@ -33,31 +33,35 @@ import com.kenji.food.tracker.ui.component.button.ScanButton
 import com.kenji.food.tracker.ui.component.input.FormNumberField
 import com.kenji.food.tracker.ui.component.input.FormTextField
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
-import com.kenji.food.tracker.ui.viewmodel.food.add.UpsertFoodAction
-import com.kenji.food.tracker.ui.viewmodel.food.add.UpsertFoodEffect
-import com.kenji.food.tracker.ui.viewmodel.food.add.UpsertFoodViewModel
+import com.kenji.food.tracker.ui.viewmodel.food.modify.ModifyFoodAction
+import com.kenji.food.tracker.ui.viewmodel.food.modify.ModifyFoodEffect
+import com.kenji.food.tracker.ui.viewmodel.food.modify.ModifyFoodViewModel
+import com.kenji.food.tracker.util.ModifyMode
 
 @Composable
-fun UpsertFoodScreen(
-    viewModel: UpsertFoodViewModel,
+fun ModifyFoodScreen(
+    viewModel: ModifyFoodViewModel,
     onLaunchScanner: () -> Unit,
     onNavBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     ResultEffect<String> { code ->
-        viewModel.onAction(UpsertFoodAction.SetCode(code))
+        viewModel.onAction(ModifyFoodAction.SetCode(code))
     }
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                UpsertFoodEffect.NavBack -> onNavBack()
+                ModifyFoodEffect.NavBack -> onNavBack()
             }
         }
     }
 
-    val title = if (state.isCreate) R.string.create else R.string.edit
+    val title = when (state.mode) {
+        is ModifyMode.Edit -> R.string.edit
+        is ModifyMode -> R.string.create
+    }
 
     when {
         state.isLoading -> FullScreenLoading()
@@ -67,7 +71,7 @@ fun UpsertFoodScreen(
                 ScanButton(onClick = onLaunchScanner)
             }
         ) { innerPadding ->
-            UpsertFood(
+            ModifyFood(
                 modifier = Modifier.padding(innerPadding),
                 name = state.name,
                 calories = state.calories,
@@ -80,7 +84,7 @@ fun UpsertFoodScreen(
                 foodCategory = state.category,
                 quantity = state.quantity,
                 code = state.code,
-                isCreate = state.isCreate,
+                mode = state.mode,
                 onAction = viewModel::onAction
             )
         }
@@ -88,7 +92,7 @@ fun UpsertFoodScreen(
 }
 
 @Composable
-private fun UpsertFood(
+private fun ModifyFood(
     modifier: Modifier,
     name: String,
     calories: Int?,
@@ -101,14 +105,14 @@ private fun UpsertFood(
     foodCategory: FoodCategory?,
     quantity: Double?,
     code: String?,
-    isCreate: Boolean,
-    onAction: (UpsertFoodAction) -> Unit
+    mode: ModifyMode,
+    onAction: (ModifyFoodAction) -> Unit
 ) {
     val scroll = rememberScrollState()
     val focusRequester = remember { FocusRequester() }
 
     LaunchedEffect(Unit) {
-        if (isCreate) {
+        if (mode is ModifyMode.Create) {
             focusRequester.requestFocus()
         }
     }
@@ -124,7 +128,7 @@ private fun UpsertFood(
             value = name,
             label = R.string.name,
             required = true,
-            onValueChange = { onAction(UpsertFoodAction.SetName(it)) }
+            onValueChange = { onAction(ModifyFoodAction.SetName(it)) }
         )
 
         FormNumberField(
@@ -132,42 +136,42 @@ private fun UpsertFood(
             label = R.string.caloriesLabel,
             iconRes = R.drawable.calories,
             required = true,
-            onValueChange = { onAction(UpsertFoodAction.SetCalories(it)) }
+            onValueChange = { onAction(ModifyFoodAction.SetCalories(it)) }
         )
 
         FormNumberField(
             value = fats,
             label = R.string.fat,
             iconRes = R.drawable.fat,
-            onValueChange = { onAction(UpsertFoodAction.SetFats(it)) }
+            onValueChange = { onAction(ModifyFoodAction.SetFats(it)) }
         )
 
         FormNumberField(
             value = saturatedFats,
             label = R.string.saturatedFat,
             iconRes = R.drawable.saturated_fat,
-            onValueChange = { onAction(UpsertFoodAction.SetSaturatedFats(it)) }
+            onValueChange = { onAction(ModifyFoodAction.SetSaturatedFats(it)) }
         )
 
         FormNumberField(
             value = carbs,
             label = R.string.carbs,
             iconRes = R.drawable.carbs,
-            onValueChange = { onAction(UpsertFoodAction.SetCarbs(it)) }
+            onValueChange = { onAction(ModifyFoodAction.SetCarbs(it)) }
         )
 
         FormNumberField(
             value = sugar,
             label = R.string.sugar,
             iconRes = R.drawable.sugar,
-            onValueChange = { onAction(UpsertFoodAction.SetSugar(it)) }
+            onValueChange = { onAction(ModifyFoodAction.SetSugar(it)) }
         )
 
         FormNumberField(
             value = protein,
             label = R.string.protein,
             iconRes = R.drawable.protein,
-            onValueChange = { onAction(UpsertFoodAction.SetProteins(it)) }
+            onValueChange = { onAction(ModifyFoodAction.SetProteins(it)) }
         )
 
         Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
@@ -175,7 +179,7 @@ private fun UpsertFood(
                 InputChip(
                     selected = category == foodCategory,
                     label = { Text(text = category.name.lowercase()) },
-                    onClick = { onAction(UpsertFoodAction.SetFoodCategory(category)) }
+                    onClick = { onAction(ModifyFoodAction.SetFoodCategory(category)) }
                 )
             }
         }
@@ -185,7 +189,7 @@ private fun UpsertFood(
                 InputChip(
                     selected = unit == foodUnit,
                     label = { Text(text = unit.name.lowercase()) },
-                    onClick = { onAction(UpsertFoodAction.SetFoodUnit(unit)) }
+                    onClick = { onAction(ModifyFoodAction.SetFoodUnit(unit)) }
                 )
             }
         }
@@ -195,19 +199,23 @@ private fun UpsertFood(
             else stringResource(R.string.quantityLabel)
 
         FormNumberField(value = quantity, label = quantityLabel) {
-            onAction(UpsertFoodAction.SetQuantity(it))
+            onAction(ModifyFoodAction.SetQuantity(it))
         }
 
         if (code != null) {
             BarcodeScannedInfo {
-                onAction(UpsertFoodAction.RemoveCode)
+                onAction(ModifyFoodAction.RemoveCode)
             }
         }
 
-        val title = if (isCreate) R.string.create else R.string.edit
+        val title = when (mode) {
+            is ModifyMode.Edit -> R.string.edit
+            is ModifyMode -> R.string.create
+        }
+
 
         ActionButton(modifier = Modifier.padding(vertical = 10.dp), text = title) {
-            onAction(UpsertFoodAction.Create)
+            onAction(ModifyFoodAction.Create)
         }
     }
 }
@@ -215,10 +223,10 @@ private fun UpsertFood(
 
 @Preview(widthDp = 500)
 @Composable
-private fun UpsertFoodPreview() {
+private fun ModifyFoodPreview() {
     FoodTrackerTheme {
         Surface {
-            UpsertFood(
+            ModifyFood(
                 Modifier,
                 "",
                 null,
@@ -231,7 +239,7 @@ private fun UpsertFoodPreview() {
                 foodCategory = null,
                 5.0,
                 code = "",
-                isCreate = true
+                mode = ModifyMode.Create
             ) { }
         }
     }

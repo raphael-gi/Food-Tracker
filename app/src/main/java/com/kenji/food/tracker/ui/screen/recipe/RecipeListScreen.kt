@@ -78,7 +78,7 @@ fun RecipeListScreen(
         },
         floatingActionButton = {
             AddButton {
-                onNavigate(Route.UpsertRecipe())
+                onNavigate(Route.ModifyRecipe())
             }
         }
     ) { innerPadding ->

@@ -1,4 +1,4 @@
-package com.kenji.food.tracker.ui.viewmodel.food.add
+package com.kenji.food.tracker.ui.viewmodel.food.modify
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -6,6 +6,7 @@ import com.kenji.food.tracker.db.dao.FoodDao
 import com.kenji.food.tracker.entity.FoodCategory
 import com.kenji.food.tracker.entity.FoodEntity
 import com.kenji.food.tracker.entity.FoodUnit
+import com.kenji.food.tracker.util.ModifyMode
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -13,68 +14,68 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-@HiltViewModel(assistedFactory = UpsertFoodViewModel.Factory::class)
-class UpsertFoodViewModel @AssistedInject constructor(
+@HiltViewModel(assistedFactory = ModifyFoodViewModel.Factory::class)
+class ModifyFoodViewModel @AssistedInject constructor(
     private val foodDao: FoodDao,
-    @Assisted private val id: Int?,
+    @Assisted private val mode: ModifyMode,
 ) : ViewModel() {
-    private val _state = MutableStateFlow(
-        UpsertFoodState(
-            isCreate = id == null,
-            isLoading = id != null
-        )
-    )
+    private val _state = MutableStateFlow(ModifyFoodState(mode = mode))
     val state = _state.asStateFlow()
 
-    private val _effect = Channel<UpsertFoodEffect>()
+    private val _effect = Channel<ModifyFoodEffect>()
     val effect = _effect.receiveAsFlow()
 
     @AssistedFactory
     interface Factory {
-        fun create(id: Int? = null): UpsertFoodViewModel
+        fun create(mode: ModifyMode): ModifyFoodViewModel
     }
 
     init {
-        if (id != null) {
+        if (mode is ModifyMode.Edit) {
+            _state.update { it.copy(isLoading = true) }
+
             viewModelScope.launch {
-                val food = foodDao.getFoodById(id).first()
-                _state.update {
-                    it.copy(
-                        name = food.name,
-                        calories = food.calories,
-                        carbs = food.carbs,
-                        proteins = food.protein,
-                        fats = food.fats,
-                        sugar = food.sugar,
-                        unit = food.unit,
-                        quantity = food.quantity,
-                        isLoading = false
-                    )
+                foodDao.getFoodById(mode.id).collect { food ->
+                    _state.update {
+                        it.copy(
+                            name = food.name,
+                            calories = food.calories,
+                            fats = food.fats,
+                            saturatedFats = food.saturatedFats,
+                            carbs = food.carbs,
+                            sugar = food.sugar,
+                            proteins = food.protein,
+                            unit = food.unit,
+                            category = food.category,
+                            code = food.code,
+                            quantity = food.quantity,
+                            isLoading = false
+                        )
+                    }
                 }
             }
         }
     }
 
-    fun onAction(action: UpsertFoodAction) {
+    fun onAction(action: ModifyFoodAction) {
         when (action) {
-            is UpsertFoodAction.SetName -> this.onSetName(action.name)
-            is UpsertFoodAction.SetCalories -> this.onSetCalories(action.input)
-            is UpsertFoodAction.SetFats -> this.onSetFats(action.input)
-            is UpsertFoodAction.SetSaturatedFats -> this.onSetSaturatedFats(action.input)
-            is UpsertFoodAction.SetCarbs -> this.onSetCarbs(action.input)
-            is UpsertFoodAction.SetSugar -> this.onSetSugar(action.input)
-            is UpsertFoodAction.SetProteins -> this.onSetProtein(action.input)
-            is UpsertFoodAction.SetFoodUnit -> this.onSetFoodUnit(action.input)
-            is UpsertFoodAction.SetFoodCategory -> this.onSetFoodCategory(action.input)
-            is UpsertFoodAction.SetQuantity -> this.onSetQuantity(action.input)
-            is UpsertFoodAction.SetCode -> this.onSetCode(action.code)
-            UpsertFoodAction.RemoveCode -> this.onRemoveCode()
-            UpsertFoodAction.Create -> this.onCreate()
+            is ModifyFoodAction.SetName -> this.onSetName(action.name)
+            is ModifyFoodAction.SetCalories -> this.onSetCalories(action.input)
+            is ModifyFoodAction.SetFats -> this.onSetFats(action.input)
+            is ModifyFoodAction.SetSaturatedFats -> this.onSetSaturatedFats(action.input)
+            is ModifyFoodAction.SetCarbs -> this.onSetCarbs(action.input)
+            is ModifyFoodAction.SetSugar -> this.onSetSugar(action.input)
+            is ModifyFoodAction.SetProteins -> this.onSetProtein(action.input)
+            is ModifyFoodAction.SetFoodUnit -> this.onSetFoodUnit(action.input)
+            is ModifyFoodAction.SetFoodCategory -> this.onSetFoodCategory(action.input)
+            is ModifyFoodAction.SetQuantity -> this.onSetQuantity(action.input)
+            is ModifyFoodAction.SetCode -> this.onSetCode(action.code)
+            ModifyFoodAction.RemoveCode -> this.onRemoveCode()
+            ModifyFoodAction.Create -> this.onCreate()
         }
     }
 
@@ -156,9 +157,14 @@ class UpsertFoodViewModel @AssistedInject constructor(
         val quantity = state.value.quantity ?: return
         val code = state.value.code
 
+        val id = when (mode) {
+            is ModifyMode.Edit -> mode.id
+            is ModifyMode.Create -> 0
+        }
+
         val entity = FoodEntity(
             name = name,
-            id = id ?: 0,
+            id = id,
             calories = calories,
             fats = fats,
             saturatedFats = saturatedFats,
@@ -174,7 +180,7 @@ class UpsertFoodViewModel @AssistedInject constructor(
 
         viewModelScope.launch {
             foodDao.upsert(entity)
-            _effect.send(UpsertFoodEffect.NavBack)
+            _effect.send(ModifyFoodEffect.NavBack)
         }
     }
 }
