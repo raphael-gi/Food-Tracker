@@ -56,14 +56,15 @@ import com.kenji.food.tracker.ui.component.input.FormNumberField
 import com.kenji.food.tracker.ui.component.input.FormTextField
 import com.kenji.food.tracker.ui.component.input.SearchField
 import com.kenji.food.tracker.ui.theme.FoodTrackerTheme
-import com.kenji.food.tracker.ui.viewmodel.recipe.add.UpsertRecipeAction
-import com.kenji.food.tracker.ui.viewmodel.recipe.add.UpsertRecipeEffect
-import com.kenji.food.tracker.ui.viewmodel.recipe.add.UpsertRecipeViewModel
+import com.kenji.food.tracker.ui.viewmodel.recipe.modify.ModifyRecipeAction
+import com.kenji.food.tracker.ui.viewmodel.recipe.modify.ModifyRecipeEffect
+import com.kenji.food.tracker.ui.viewmodel.recipe.modify.ModifyRecipeViewModel
+import com.kenji.food.tracker.util.ModifyMode
 import kotlinx.coroutines.flow.flowOf
 
 @Composable
-fun UpsertRecipeScreen(
-    viewModel: UpsertRecipeViewModel,
+fun ModifyRecipeScreen(
+    viewModel: ModifyRecipeViewModel,
     onLaunchCamera: () -> Unit,
     onNavBack: () -> Unit
 ) {
@@ -71,27 +72,30 @@ fun UpsertRecipeScreen(
     val foods = viewModel.foods.collectAsLazyPagingItems()
 
     ResultEffect<String> { code ->
-        viewModel.onAction(UpsertRecipeAction.CodeScanned(code))
+        viewModel.onAction(ModifyRecipeAction.CodeScanned(code))
     }
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                UpsertRecipeEffect.NavBack -> onNavBack()
-                UpsertRecipeEffect.LaunchCamera -> onLaunchCamera()
-                UpsertRecipeEffect.ScanNotFound -> {}
+                ModifyRecipeEffect.NavBack -> onNavBack()
+                ModifyRecipeEffect.LaunchCamera -> onLaunchCamera()
+                ModifyRecipeEffect.ScanNotFound -> {}
             }
         }
     }
 
-    val title = if (state.isCreate) R.string.create else R.string.edit
+    val title = when (state.mode) {
+        is ModifyMode.Edit -> R.string.edit
+        is ModifyMode -> R.string.create
+    }
 
     when {
         state.isLoading -> FullScreenLoading()
         else -> Scaffold(
             topBar = { TopBar(title, onBackPressed = onNavBack) },
         ) { innerPadding ->
-            UpsertRecipe(
+            ModifyRecipe(
                 modifier = Modifier.padding(innerPadding),
                 foods = foods,
                 name = state.name,
@@ -99,7 +103,7 @@ fun UpsertRecipeScreen(
                 isSelectionMode = state.isSelectMode,
                 selectedFoods = state.selectedFoods,
                 query = state.query,
-                isCreate = state.isCreate,
+                mode = state.mode,
                 onAction = viewModel::onAction
             )
         }
@@ -107,7 +111,7 @@ fun UpsertRecipeScreen(
 }
 
 @Composable
-private fun UpsertRecipe(
+private fun ModifyRecipe(
     modifier: Modifier = Modifier,
     foods: LazyPagingItems<FoodEntity>,
     name: String,
@@ -115,13 +119,13 @@ private fun UpsertRecipe(
     isSelectionMode: Boolean,
     selectedFoods: Map<Int, RecipeFoodEntity>,
     query: String,
-    isCreate: Boolean,
-    onAction: (UpsertRecipeAction) -> Unit
+    mode: ModifyMode,
+    onAction: (ModifyRecipeAction) -> Unit
 ) {
     val focusRequester = remember { FocusRequester() }
 
     LaunchedEffect(Unit) {
-        if (isCreate) {
+        if (mode is ModifyMode.Create) {
             focusRequester.requestFocus()
         }
     }
@@ -137,7 +141,7 @@ private fun UpsertRecipe(
                 value = name,
                 label = R.string.name
             ) {
-                onAction(UpsertRecipeAction.SetName(it))
+                onAction(ModifyRecipeAction.SetName(it))
             }
         }
 
@@ -155,7 +159,7 @@ private fun UpsertRecipe(
                 state = swipeToDismissState,
                 enableDismissFromEndToStart = false,
                 onDismiss = {
-                    onAction(UpsertRecipeAction.ToggleSelection(recipeFood.food))
+                    onAction(ModifyRecipeAction.ToggleSelection(recipeFood.food))
                 },
                 backgroundContent = {
                     Box(
@@ -184,7 +188,7 @@ private fun UpsertRecipe(
                         label = stringResource(R.string.quantityUnitLabel, recipeFood.food.unit)
                     ) { input ->
                         onAction(
-                            UpsertRecipeAction.SetRecipeFoodQuantity(recipeFood.food, input)
+                            ModifyRecipeAction.SetRecipeFoodQuantity(recipeFood.food, input)
                         )
                     }
                 }
@@ -193,21 +197,24 @@ private fun UpsertRecipe(
 
         item {
             FoodSelectorButtons(
-                onClickSelectButton = { onAction(UpsertRecipeAction.ToggleSelectMode) },
-                onClickScanButton = { onAction(UpsertRecipeAction.LaunchCamera) }
+                onClickSelectButton = { onAction(ModifyRecipeAction.ToggleSelectMode) },
+                onClickScanButton = { onAction(ModifyRecipeAction.LaunchCamera) }
             )
 
             FormNumberField(
                 value = portions,
                 label = R.string.portions,
                 required = true,
-                onValueChange = { onAction(UpsertRecipeAction.SetPortions(it)) }
+                onValueChange = { onAction(ModifyRecipeAction.SetPortions(it)) }
             )
 
-            val title = if (isCreate) R.string.create else R.string.edit
+            val title = when (mode) {
+                is ModifyMode.Edit -> R.string.edit
+                is ModifyMode -> R.string.create
+            }
 
             ActionButton(modifier = Modifier.padding(vertical = 10.dp), text = title) {
-                onAction(UpsertRecipeAction.Create)
+                onAction(ModifyRecipeAction.Create)
             }
         }
     }
@@ -223,12 +230,12 @@ private fun FoodSelection(
     foods: LazyPagingItems<FoodEntity>,
     selectedFoods: Map<Int, RecipeFoodEntity>,
     query: String,
-    onAction: (UpsertRecipeAction) -> Unit
+    onAction: (ModifyRecipeAction) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
-        onDismissRequest = { onAction(UpsertRecipeAction.ToggleSelectMode) },
+        onDismissRequest = { onAction(ModifyRecipeAction.ToggleSelectMode) },
         sheetState = sheetState
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -247,7 +254,7 @@ private fun FoodSelectionList(
     items: LazyPagingItems<FoodEntity>,
     query: String,
     selectedFoods: Set<Int>,
-    onAction: (UpsertRecipeAction) -> Unit
+    onAction: (ModifyRecipeAction) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         SearchField(
@@ -255,7 +262,7 @@ private fun FoodSelectionList(
             query = query,
             placeholder = R.string.searchMeals
         ) {
-            onAction(UpsertRecipeAction.Search(it))
+            onAction(ModifyRecipeAction.Search(it))
         }
         if (items.loadState.isIdle && items.itemCount == 0) {
             NoData(
@@ -269,7 +276,7 @@ private fun FoodSelectionList(
                     val item = items[index]
                     if (item != null) {
                         FoodSelectionCell(item, selectedFoods) {
-                            onAction(UpsertRecipeAction.ToggleSelection(item))
+                            onAction(ModifyRecipeAction.ToggleSelection(item))
                         }
                     } else {
                         Text("Unavailable")
@@ -309,7 +316,7 @@ private fun FoodSelectionCell(
 
 @Preview
 @Composable
-private fun UpsertRecipePreview() {
+private fun ModifyRecipePreview() {
     val item = FoodEntity(
         id = 1,
         name = "Chicken",
@@ -323,7 +330,7 @@ private fun UpsertRecipePreview() {
 
     FoodTrackerTheme {
         Surface {
-            UpsertRecipe(
+            ModifyRecipe(
                 foods = items,
                 name = "",
                 portions = 1.0,
@@ -337,7 +344,7 @@ private fun UpsertRecipePreview() {
                     )
                 ),
                 query = "",
-                isCreate = false,
+                mode = ModifyMode.Create,
                 onAction = {}
             )
         }

@@ -27,7 +27,9 @@ import com.kenji.food.tracker.util.Formatter
 @Composable
 fun FoodCell(modifier: Modifier = Modifier, item: FoodEntity, quantity: Double? = null) {
     Column(
-        modifier = modifier.padding(10.dp)
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(10.dp)
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(

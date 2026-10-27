@@ -43,7 +43,8 @@ import kotlinx.coroutines.flow.flowOf
 @Composable
 fun FoodListScreen(
     viewModel: FoodListViewModel = hiltViewModel(),
-    onNavigate: (Route) -> Unit,
+    onSelectFood: (id: Int) -> Unit,
+    onAddFood: () -> Unit,
     onBackPressed: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -52,7 +53,7 @@ fun FoodListScreen(
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                is FoodListEffect.ItemSelected -> onNavigate(Route.FoodDetail(effect.item.id))
+                is FoodListEffect.ItemSelected -> onSelectFood(effect.item.id)
             }
         }
     }
@@ -77,7 +78,7 @@ fun FoodListScreen(
         },
         floatingActionButton = {
             AddButton {
-                onNavigate(Route.UpsertFood())
+                onAddFood()
             }
         },
     ) { innerPadding ->

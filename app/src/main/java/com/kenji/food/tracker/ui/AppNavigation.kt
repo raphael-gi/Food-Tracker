@@ -18,19 +18,20 @@ import com.kenji.food.tracker.ui.screen.count.CountHistoryListScreen
 import com.kenji.food.tracker.ui.screen.count.CountScreen
 import com.kenji.food.tracker.ui.screen.food.FoodDetailScreen
 import com.kenji.food.tracker.ui.screen.food.FoodListScreen
-import com.kenji.food.tracker.ui.screen.food.UpsertFoodScreen
+import com.kenji.food.tracker.ui.screen.food.ModifyFoodScreen
 import com.kenji.food.tracker.ui.screen.onboarding.OnboardingScreen
 import com.kenji.food.tracker.ui.screen.profile.FoodTargetScreen
 import com.kenji.food.tracker.ui.screen.profile.ProfileScreen
 import com.kenji.food.tracker.ui.screen.recipe.RecipeDetailScreen
 import com.kenji.food.tracker.ui.screen.recipe.RecipeListScreen
-import com.kenji.food.tracker.ui.screen.recipe.UpsertRecipeScreen
+import com.kenji.food.tracker.ui.screen.recipe.ModifyRecipeScreen
 import com.kenji.food.tracker.ui.screen.scan.ScannerScreen
-import com.kenji.food.tracker.ui.viewmodel.food.add.UpsertFoodViewModel
+import com.kenji.food.tracker.ui.viewmodel.food.modify.ModifyFoodViewModel
 import com.kenji.food.tracker.ui.viewmodel.food.detail.FoodDetailViewModel
 import com.kenji.food.tracker.ui.viewmodel.food.target.FoodTargetViewModel
-import com.kenji.food.tracker.ui.viewmodel.recipe.add.UpsertRecipeViewModel
+import com.kenji.food.tracker.ui.viewmodel.recipe.modify.ModifyRecipeViewModel
 import com.kenji.food.tracker.ui.viewmodel.recipe.detail.RecipeDetailViewModel
+import com.kenji.food.tracker.util.ModifyMode
 
 @Composable
 fun AppNavigation() {
@@ -72,7 +73,8 @@ fun AppNavigation() {
 
                 entry<Route.FoodList> {
                     FoodListScreen(
-                        onNavigate = { backStack.add(it) },
+                        onSelectFood = { backStack.add(Route.FoodDetail(it)) },
+                        onAddFood = { backStack.add(Route.ModifyFood()) },
                         onBackPressed = { backStack.removeLastOrNull() }
                     )
                 }
@@ -82,16 +84,21 @@ fun AppNavigation() {
                         viewModel = hiltViewModel<FoodDetailViewModel, FoodDetailViewModel.Factory>(
                             creationCallback = { factory -> factory.create(key) }
                         ),
-                        onPressEdit = { backStack.add(Route.UpsertFood(key.id)) },
+                        onPressEdit = { backStack.add(Route.ModifyFood(key.id)) },
                         onBackPressed = { backStack.removeLastOrNull() }
                     )
                 }
 
-                entry<Route.UpsertFood> { key ->
-                    UpsertFoodScreen(
-                        viewModel = hiltViewModel<UpsertFoodViewModel, UpsertFoodViewModel.Factory>(
+                entry<Route.ModifyFood> { key ->
+                    ModifyFoodScreen(
+                        viewModel = hiltViewModel<ModifyFoodViewModel, ModifyFoodViewModel.Factory>(
                             creationCallback = { factory ->
-                                factory.create(id = key.id)
+                                val mode = when (key.id) {
+                                    is Int -> ModifyMode.Edit(key.id)
+                                    else -> ModifyMode.Create
+                                }
+
+                                factory.create(mode = mode)
                             }
                         ),
                         onLaunchScanner = { backStack.add(Route.Scanner) },
@@ -111,15 +118,22 @@ fun AppNavigation() {
                         viewModel = hiltViewModel<RecipeDetailViewModel, RecipeDetailViewModel.Factory>(
                             creationCallback = { factory -> factory.create(key.id) }
                         ),
-                        onPressEdit = { backStack.add(Route.UpsertRecipe(key.id)) },
+                        onPressEdit = { backStack.add(Route.ModifyRecipe(key.id)) },
                         onBackPressed = { backStack.removeLastOrNull() }
                     )
                 }
 
-                entry<Route.UpsertRecipe> { key ->
-                    UpsertRecipeScreen(
-                        viewModel = hiltViewModel<UpsertRecipeViewModel, UpsertRecipeViewModel.Factory>(
-                            creationCallback = { factory -> factory.create(key.id) }
+                entry<Route.ModifyRecipe> { key ->
+                    ModifyRecipeScreen(
+                        viewModel = hiltViewModel<ModifyRecipeViewModel, ModifyRecipeViewModel.Factory>(
+                            creationCallback = { factory ->
+                                val mode = when (key.id) {
+                                    is Int -> ModifyMode.Edit(key.id)
+                                    else -> ModifyMode.Create
+                                }
+
+                                factory.create(mode = mode)
+                            }
                         ),
                         onLaunchCamera = {
                             backStack.add(Route.Scanner)
