@@ -1,4 +1,4 @@
-name: Release
+name: Unit Test
 
 on:
   pull_request:
