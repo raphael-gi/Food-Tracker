@@ -22,15 +22,15 @@ import com.kenji.food.tracker.ui.screen.food.ModifyFoodScreen
 import com.kenji.food.tracker.ui.screen.onboarding.OnboardingScreen
 import com.kenji.food.tracker.ui.screen.profile.FoodTargetScreen
 import com.kenji.food.tracker.ui.screen.profile.ProfileScreen
+import com.kenji.food.tracker.ui.screen.recipe.ModifyRecipeScreen
 import com.kenji.food.tracker.ui.screen.recipe.RecipeDetailScreen
 import com.kenji.food.tracker.ui.screen.recipe.RecipeListScreen
-import com.kenji.food.tracker.ui.screen.recipe.ModifyRecipeScreen
 import com.kenji.food.tracker.ui.screen.scan.ScannerScreen
-import com.kenji.food.tracker.ui.viewmodel.food.modify.ModifyFoodViewModel
 import com.kenji.food.tracker.ui.viewmodel.food.detail.FoodDetailViewModel
+import com.kenji.food.tracker.ui.viewmodel.food.modify.ModifyFoodViewModel
 import com.kenji.food.tracker.ui.viewmodel.food.target.FoodTargetViewModel
-import com.kenji.food.tracker.ui.viewmodel.recipe.modify.ModifyRecipeViewModel
 import com.kenji.food.tracker.ui.viewmodel.recipe.detail.RecipeDetailViewModel
+import com.kenji.food.tracker.ui.viewmodel.recipe.modify.ModifyRecipeViewModel
 import com.kenji.food.tracker.util.ModifyMode
 
 @Composable
@@ -95,7 +95,7 @@ fun AppNavigation() {
                             creationCallback = { factory ->
                                 val mode = when (key.id) {
                                     is Int -> ModifyMode.Edit(key.id)
-                                    else -> ModifyMode.Create
+                                    else -> ModifyMode.Create(key.code)
                                 }
 
                                 factory.create(mode = mode)
@@ -129,7 +129,7 @@ fun AppNavigation() {
                             creationCallback = { factory ->
                                 val mode = when (key.id) {
                                     is Int -> ModifyMode.Edit(key.id)
-                                    else -> ModifyMode.Create
+                                    else -> ModifyMode.Create()
                                 }
 
                                 factory.create(mode = mode)
@@ -148,6 +148,9 @@ fun AppNavigation() {
                     CountScreen(
                         onLaunchCamera = {
                             backStack.add(Route.Scanner)
+                        },
+                        onCreateFromBarcode = { code ->
+                            backStack.add(Route.ModifyFood(code = code))
                         },
                         onFinish = {
                             backStack.clear()

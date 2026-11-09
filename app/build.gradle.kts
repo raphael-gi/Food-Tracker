@@ -32,7 +32,7 @@ android {
         minSdk = 33
         targetSdk = 37
         versionCode = 4
-        versionName = "1.0.5"
+        versionName = "1.0.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -63,10 +63,6 @@ android {
         }
 
         debug {
-            optimization {
-                enable = true
-            }
-
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

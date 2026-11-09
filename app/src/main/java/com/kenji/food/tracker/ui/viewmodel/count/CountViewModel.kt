@@ -70,7 +70,7 @@ class CountViewModel @Inject constructor(
             val scannedFood = foodDao.getFoodByCode(code)
 
             when (scannedFood.size) {
-                0 -> _effect.send(CountEffect.ScanNotFound)
+                0 -> _effect.send(CountEffect.ScanNotFound(code))
                 1 -> onSelectMeal(
                     Recipe(
                         food = scannedFood.first(),
