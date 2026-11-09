@@ -23,7 +23,7 @@ sealed interface Route : NavKey {
     data class RecipeDetail(val id: Int) : Route
 
     @Serializable
-    data class ModifyFood(val id: Int? = null) : Route
+    data class ModifyFood(val id: Int? = null, val code: String? = null) : Route
 
     @Serializable
     data class ModifyRecipe(val id: Int? = null) : Route

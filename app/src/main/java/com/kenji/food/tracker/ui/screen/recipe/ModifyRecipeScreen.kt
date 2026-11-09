@@ -344,7 +344,7 @@ private fun ModifyRecipePreview() {
                     )
                 ),
                 query = "",
-                mode = ModifyMode.Create,
+                mode = ModifyMode.Create(),
                 onAction = {}
             )
         }

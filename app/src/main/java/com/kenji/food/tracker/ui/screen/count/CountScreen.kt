@@ -50,6 +50,7 @@ import com.kenji.food.tracker.entity.CountedMealEntity
 import com.kenji.food.tracker.entity.FoodEntity
 import com.kenji.food.tracker.entity.FoodUnit
 import com.kenji.food.tracker.entity.Recipe
+import com.kenji.food.tracker.ui.SnackBarController
 import com.kenji.food.tracker.ui.component.FoodCard
 import com.kenji.food.tracker.ui.component.FoodSelectorButtons
 import com.kenji.food.tracker.ui.component.TopBar
@@ -74,6 +75,7 @@ import java.time.ZoneOffset
 fun CountScreen(
     viewModel: CountViewModel = hiltViewModel(),
     onLaunchCamera: () -> Unit,
+    onCreateFromBarcode: (String) -> Unit,
     onFinish: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -88,13 +90,16 @@ fun CountScreen(
             when (effect) {
                 CountEffect.LaunchCamera -> onLaunchCamera()
                 CountEffect.Finish -> onFinish()
-                CountEffect.ScanNotFound -> {}
+                is CountEffect.ScanNotFound -> SnackBarController.sendEvent(SnackBarController.Event.BarcodeNotFound {
+                    onCreateFromBarcode(effect.code)
+                })
             }
         }
     }
 
     Scaffold(
         topBar = { TopBar(title = R.string.countMeal) },
+        snackbarHost = { SnackBarController.Show() }
     ) { innerPadding ->
         CountContent(
             modifier = Modifier.padding(innerPadding),

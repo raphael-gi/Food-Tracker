@@ -35,26 +35,29 @@ class ModifyFoodViewModel @AssistedInject constructor(
     }
 
     init {
-        if (mode is ModifyMode.Edit) {
-            _state.update { it.copy(isLoading = true) }
+        when (mode) {
+            is ModifyMode.Create -> _state.update { it.copy(code = mode.code) }
+            is ModifyMode.Edit -> {
+                _state.update { it.copy(isLoading = true) }
 
-            viewModelScope.launch {
-                foodDao.getFoodById(mode.id).collect { food ->
-                    _state.update {
-                        it.copy(
-                            name = food.name,
-                            calories = food.calories,
-                            fats = food.fats,
-                            saturatedFats = food.saturatedFats,
-                            carbs = food.carbs,
-                            sugar = food.sugar,
-                            proteins = food.protein,
-                            unit = food.unit,
-                            category = food.category,
-                            code = food.code,
-                            quantity = food.quantity,
-                            isLoading = false
-                        )
+                viewModelScope.launch {
+                    foodDao.getFoodById(mode.id).collect { food ->
+                        _state.update {
+                            it.copy(
+                                name = food.name,
+                                calories = food.calories,
+                                fats = food.fats,
+                                saturatedFats = food.saturatedFats,
+                                carbs = food.carbs,
+                                sugar = food.sugar,
+                                proteins = food.protein,
+                                unit = food.unit,
+                                category = food.category,
+                                code = food.code,
+                                quantity = food.quantity,
+                                isLoading = false
+                            )
+                        }
                     }
                 }
             }

@@ -239,7 +239,7 @@ private fun ModifyFoodPreview() {
                 foodCategory = null,
                 5.0,
                 code = "",
-                mode = ModifyMode.Create
+                mode = ModifyMode.Create()
             ) { }
         }
     }

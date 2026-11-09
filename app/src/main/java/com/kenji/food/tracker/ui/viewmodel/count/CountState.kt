@@ -28,6 +28,6 @@ sealed interface CountAction {
 
 sealed interface CountEffect {
     data object LaunchCamera : CountEffect
-    data object ScanNotFound : CountEffect
+    data class ScanNotFound(val code: String) : CountEffect
     data object Finish : CountEffect
 }

@@ -5,6 +5,7 @@
 
     <string name="foods">Foods</string>
     <string name="food">Food</string>
+    <string name="barcodeNotFound">Barcode not found</string>
     <string name="recipe">Recipe</string>
     <string name="recipes">Recipes</string>
 
